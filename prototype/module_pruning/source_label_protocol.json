@@ -1,0 +1,37 @@
+{
+  "version": "source-boundary-labels/v1",
+  "sources": ["paperless-ngx", "saleor"],
+  "selection": "Four previously unfitted source regions from two already pinned local repositories; each has a disabled-capability and enabled-capability contract. Paired contracts and regions from the same repository must never be split across source folds.",
+  "corpus": [
+    {"id": "paperless/formatted/disabled", "project": "paperless-ngx", "candidate": "formatted", "contract": "disabled", "follow_formatting": false},
+    {"id": "paperless/formatted/enabled", "project": "paperless-ngx", "candidate": "formatted", "contract": "enabled", "follow_formatting": true},
+    {"id": "paperless/plain/disabled", "project": "paperless-ngx", "candidate": "plain", "contract": "disabled", "follow_formatting": true},
+    {"id": "paperless/plain/enabled", "project": "paperless-ngx", "candidate": "plain", "contract": "enabled", "follow_formatting": false},
+    {"id": "saleor/price/disabled", "project": "saleor", "candidate": "price", "contract": "disabled"},
+    {"id": "saleor/price/enabled", "project": "saleor", "candidate": "price", "contract": "enabled"},
+    {"id": "saleor/reason/disabled", "project": "saleor", "candidate": "reason", "contract": "disabled"},
+    {"id": "saleor/reason/enabled", "project": "saleor", "candidate": "reason", "contract": "enabled"}
+  ],
+  "paperless_contract": {
+    "root": "OriginalsOnlyStrategy/ArchiveOnlyStrategy/OriginalAndArchiveStrategy construction then add_document, with follow_formatting fixed at this boundary",
+    "observations": "Return/error and ordered ZIP entries including filenames and complete file contents. Compare logical archive records, not timestamp-dependent raw ZIP bytes.",
+    "retained_capability": "Export arbitrary valid document file payloads, original/archive choice and collision handling under the configured naming policy. No whitelist of document IDs or file contents.",
+    "assumptions": "Ordinary document interface, stable valid local files, terminating deterministic get_public_filename gateway; no reflection, dynamic strategy monkeypatching or external direct calls to the removed private method. Constructor option is a capability constraint, not inferred from observed requests.",
+    "test_boundary": "Run the entire frozen bulk_download.py module with real standard-library ZIP/file operations; document ORM interface is a declared test double. HTTP, permission resolution and ORM are outside this boundary.",
+    "scenarios": "Four document sets (empty, single, collision, original/archive fallback) times three strategies times ZIP_STORED/ZIP_DEFLATED; 24 pairs per contract"
+  },
+  "saleor_contract": {
+    "root": "Frozen _append_line_to_update function acting on a frozen CheckoutLineData dataclass and a plain line-state interface",
+    "observations": "Return/error, all quantity/override/reason/metadata state, ordered to_update identities including duplicates, and to_delete identities",
+    "retained_capability": "Quantity and metadata updates; enabled contracts also retain custom-price and reason updates. Disabled contracts require both custom_price_to_update and custom_price_reason_to_update to be False for every invocation, without restricting quantity/price values to the test sample.",
+    "assumptions": "Exact upstream dataclass with ordinary Boolean fields; no subclasses/property hooks/reflection or concurrent mutation. Line-state adapter exposes declared fields and the upstream metadata method.",
+    "test_boundary": "Compile exact upstream function/dataclass/metadata method ASTs with postponed annotations. Database model storage is represented by the explicit object/write-plan boundary; no transaction, trigger, permission or real database execution claim.",
+    "scenarios": "quantity_update in false/true, quantity in -1/0/3, replace/deleted/prequeued in false/true; disabled price flags both false, enabled flags each false/true. 48 disabled and 192 enabled pairs per region. Metadata payload alternates deterministically."
+  },
+  "label_rule": "Necessary label 1 requires an executed within-contract counterexample with successful original. Conditional removable label 0 requires a source-checked unreachable-region argument plus all sampled pairs agreeing. Passing samples alone => null. Labels apply only to explicit source boundaries; full_application_label remains null.",
+  "proof_rule": "Paperless: deleted method's only syntactic reference is the nonselected constructor binding. Saleor: exact dataclass Boolean field is contractually False and deleted region is an if guarded solely by that field. Record assumptions and source hashes; these are bounded structural arguments, not whole-system equivalence proofs.",
+  "independence": "Two third-party source repositories, four regions, eight contract records; not eight independent software systems. Selected by the same researcher after earlier results, not blind or independently adjudicated. All prior authored fixtures remain a separate provenance group.",
+  "scoring": "Freeze all current model/extractor code and parameters. Do not hand-invent Boolean features for these sources, do not refit, and do not report probability metrics. Existing finite-fixture feature domain does not cover these source boundaries; scores abstain.",
+  "stop": "One frozen eight-record batch, preserve unknowns/failures. No additional candidates to force balance, no application edits, no deployment/deletion authorization, no performance run.",
+  "production_authorized": false
+}

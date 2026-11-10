@@ -1,0 +1,40 @@
+{
+  "id": "alfio-ordered-reservation-batch-v1",
+  "status": "proposed_not_admitted",
+  "scope": "TicketRepository.reserveTickets default method on the existing ordinary-ticket branch",
+  "source_evidence": "evidence/alfio-baseline/20261106-788b831dd41c/decompiled/alfio/repository/TicketRepository.java",
+  "trace_evidence": "evidence/alfio-dependencies/20261106-f8e5aaa63540/dependencies.json",
+  "semantic_summary_origin": "human-audited decompiled body plus binary SQL annotations and unchanged replay witness; not an automatically proved compiler transformation",
+  "input": {
+    "order": "original ticketIds encounter order, including multiplicity",
+    "per_row": ["reservationId", "id", "categoryId", "userLanguage", "srcPriceCts", "currencyCode", "ticketMetadata", "firstName", "lastName", "email", "fullName", "vatStatus"],
+    "preserve": ["NULL versus empty values", "full metadata and contact fields", "Java attendee selection and metadata serialization semantics", "parameter evaluation failures"]
+  },
+  "proposal": "Specialize the fixed named-parameter batch into a typed database entry executing the same ordered UPDATE effects and returning the same aggregate update count. Retain Java-side value conversions until an ABI is verified.",
+  "preserved_context": [
+    "original transaction and organization/RLS context",
+    "FOR UPDATE SKIP LOCKED selection and insufficient-stock guard before the region",
+    "row-count validation immediately after the region",
+    "all additional-field reads and writes after the region",
+    "original first-ticket read after additional-field processing",
+    "Java price/VAT/discount computation and subsequent price update",
+    "billing, audit, payment applicability, extension/event effects and commit/rollback",
+    "special-price branches retain original implementation"
+  ],
+  "not_claimed": ["deletion of unused data or safety modules", "N JDBC roundtrips becoming one", "performance improvement", "full capability equivalence"],
+  "admission_obligations": [
+    "recover and check complete typed binding ABI, including nulls, metadata encoding and enum casts",
+    "preserve per-row order, duplicate-ID behavior and affected-row accounting; do not equate batch SUCCESS_NO_INFO with a row count",
+    "preserve service-visible exception class/SQLSTATE and rollback for statement failures; unresolved cases remain barriers",
+    "preserve invoker privileges, RLS and same-connection transaction scope; never use SECURITY DEFINER or autonomous commits",
+    "prove no hidden trigger/effect semantics are dropped and preserve relevant constraint/trigger ordering",
+    "dispatch to the old path before executing any new writes when eligibility is unknown; never retry the old path after partial new writes",
+    "compare complete results and all table states before measuring performance; accept a no-speedup result"
+  ],
+  "rejected_expansion": {
+    "idea": "merge batch writes with the subsequent first-ticket read by moving the read earlier",
+    "status": "not_admitted",
+    "reason": "actual additional-field processing lies between them; empty fixture tables do not prove those calls lack required effects",
+    "intervening_statement_counts_for_3_2_1_tickets": [6, 4, 2]
+  }
+}

@@ -1,0 +1,442 @@
+{
+  "version": 1,
+  "commands": [
+    {
+      "id": "new-01",
+      "type": "NewOrder",
+      "terminal": 1,
+      "warehouse": 1,
+      "clock_ms": 1793750400000,
+      "district": 1,
+      "customer": 1,
+      "lines": [
+        {
+          "item": 1,
+          "quantity": 10
+        },
+        {
+          "item": 2,
+          "quantity": 10
+        },
+        {
+          "item": 3,
+          "quantity": 10
+        },
+        {
+          "item": 4,
+          "quantity": 10
+        },
+        {
+          "item": 5,
+          "quantity": 10
+        }
+      ]
+    },
+    {
+      "id": "new-02",
+      "type": "NewOrder",
+      "terminal": 2,
+      "warehouse": 1,
+      "clock_ms": 1793750401000,
+      "district": 1,
+      "customer": 1,
+      "lines": [
+        {
+          "item": 1,
+          "quantity": 10
+        },
+        {
+          "item": 2,
+          "quantity": 10
+        },
+        {
+          "item": 3,
+          "quantity": 10
+        },
+        {
+          "item": 4,
+          "quantity": 10
+        },
+        {
+          "item": 5,
+          "quantity": 10
+        }
+      ]
+    },
+    {
+      "id": "new-03",
+      "type": "NewOrder",
+      "terminal": 3,
+      "warehouse": 1,
+      "clock_ms": 1793750402000,
+      "district": 2,
+      "customer": 42,
+      "lines": [
+        {
+          "item": 31,
+          "quantity": 1
+        },
+        {
+          "item": 32,
+          "quantity": 2
+        },
+        {
+          "item": 33,
+          "quantity": 3
+        },
+        {
+          "item": 34,
+          "quantity": 4
+        },
+        {
+          "item": 35,
+          "quantity": 5
+        }
+      ]
+    },
+    {
+      "id": "new-04",
+      "type": "NewOrder",
+      "terminal": 4,
+      "warehouse": 1,
+      "clock_ms": 1793750403000,
+      "district": 10,
+      "customer": 3000,
+      "lines": [
+        {
+          "item": 41,
+          "quantity": 1
+        },
+        {
+          "item": 42,
+          "quantity": 2
+        },
+        {
+          "item": 43,
+          "quantity": 3
+        },
+        {
+          "item": 44,
+          "quantity": 4
+        },
+        {
+          "item": 45,
+          "quantity": 5
+        },
+        {
+          "item": 46,
+          "quantity": 6
+        },
+        {
+          "item": 47,
+          "quantity": 7
+        },
+        {
+          "item": 48,
+          "quantity": 8
+        },
+        {
+          "item": 49,
+          "quantity": 9
+        },
+        {
+          "item": 50,
+          "quantity": 10
+        },
+        {
+          "item": 51,
+          "quantity": 1
+        },
+        {
+          "item": 52,
+          "quantity": 2
+        },
+        {
+          "item": 53,
+          "quantity": 3
+        },
+        {
+          "item": 54,
+          "quantity": 4
+        },
+        {
+          "item": 55,
+          "quantity": 5
+        }
+      ]
+    },
+    {
+      "id": "new-05",
+      "type": "NewOrder",
+      "terminal": 1,
+      "warehouse": 1,
+      "clock_ms": 1793750404000,
+      "district": 1,
+      "customer": 1,
+      "lines": [
+        {
+          "item": 6,
+          "quantity": 1
+        },
+        {
+          "item": 6,
+          "quantity": 2
+        },
+        {
+          "item": 7,
+          "quantity": 3
+        },
+        {
+          "item": 8,
+          "quantity": 4
+        },
+        {
+          "item": 9,
+          "quantity": 5
+        }
+      ]
+    },
+    {
+      "id": "new-06",
+      "type": "NewOrder",
+      "terminal": 2,
+      "warehouse": 1,
+      "clock_ms": 1793750405000,
+      "district": 1,
+      "customer": 1,
+      "lines": [
+        {
+          "item": 100001,
+          "quantity": 10
+        },
+        {
+          "item": 1,
+          "quantity": 10
+        },
+        {
+          "item": 2,
+          "quantity": 10
+        },
+        {
+          "item": 3,
+          "quantity": 10
+        },
+        {
+          "item": 4,
+          "quantity": 10
+        }
+      ]
+    },
+    {
+      "id": "new-07",
+      "type": "NewOrder",
+      "terminal": 3,
+      "warehouse": 1,
+      "clock_ms": 1793750406000,
+      "district": 1,
+      "customer": 1,
+      "lines": [
+        {
+          "item": 1,
+          "quantity": 10
+        },
+        {
+          "item": 2,
+          "quantity": 10
+        },
+        {
+          "item": 100001,
+          "quantity": 10
+        },
+        {
+          "item": 3,
+          "quantity": 10
+        },
+        {
+          "item": 4,
+          "quantity": 10
+        }
+      ]
+    },
+    {
+      "id": "new-08",
+      "type": "NewOrder",
+      "terminal": 4,
+      "warehouse": 1,
+      "clock_ms": 1793750407000,
+      "district": 1,
+      "customer": 1,
+      "lines": [
+        {
+          "item": 1,
+          "quantity": 10
+        },
+        {
+          "item": 2,
+          "quantity": 10
+        },
+        {
+          "item": 3,
+          "quantity": 10
+        },
+        {
+          "item": 4,
+          "quantity": 10
+        },
+        {
+          "item": 100001,
+          "quantity": 10
+        }
+      ]
+    },
+    {
+      "id": "new-09",
+      "type": "NewOrder",
+      "terminal": 1,
+      "warehouse": 1,
+      "clock_ms": 1793750408000,
+      "district": 3,
+      "customer": 123,
+      "lines": [
+        {
+          "item": 91,
+          "quantity": 1
+        },
+        {
+          "item": 92,
+          "quantity": 1
+        },
+        {
+          "item": 93,
+          "quantity": 1
+        },
+        {
+          "item": 94,
+          "quantity": 1
+        },
+        {
+          "item": 95,
+          "quantity": 1
+        }
+      ]
+    },
+    {
+      "id": "new-10",
+      "type": "Payment",
+      "terminal": 2,
+      "warehouse": 1,
+      "clock_ms": 1793750409000,
+      "district": 2,
+      "customer_district": 2,
+      "customer": 42,
+      "amount": 17.25
+    },
+    {
+      "id": "new-11",
+      "type": "OrderStatus",
+      "terminal": 3,
+      "warehouse": 1,
+      "clock_ms": 1793750410000,
+      "district": 2,
+      "customer": 42
+    },
+    {
+      "id": "new-12",
+      "type": "StockLevel",
+      "terminal": 4,
+      "warehouse": 1,
+      "clock_ms": 1793750411000,
+      "district": 1,
+      "threshold": 20
+    },
+    {
+      "id": "new-13",
+      "type": "Delivery",
+      "terminal": 1,
+      "warehouse": 1,
+      "clock_ms": 1793750412000,
+      "carrier": 7
+    },
+    {
+      "id": "new-14",
+      "type": "NewOrder",
+      "terminal": 2,
+      "warehouse": 1,
+      "clock_ms": 1793750413000,
+      "district": 1,
+      "customer": 1,
+      "lines": [
+        {
+          "item": 1,
+          "quantity": 0
+        },
+        {
+          "item": 2,
+          "quantity": 1
+        },
+        {
+          "item": 3,
+          "quantity": 1
+        },
+        {
+          "item": 4,
+          "quantity": 1
+        },
+        {
+          "item": 5,
+          "quantity": 1
+        }
+      ]
+    },
+    {
+      "id": "new-15",
+      "type": "StockLevel",
+      "terminal": 3,
+      "warehouse": 1,
+      "clock_ms": 1793750414000,
+      "district": 1,
+      "threshold": 15,
+      "unexpected": true
+    },
+    {
+      "id": "new-16",
+      "type": "Payment",
+      "terminal": 4,
+      "warehouse": 1,
+      "clock_ms": 1793750415000,
+      "district": 1,
+      "customer_district": 1,
+      "customer": 1,
+      "amount": -1
+    },
+    {
+      "id": "new-17",
+      "type": "NewOrder",
+      "terminal": 1,
+      "warehouse": 1,
+      "clock_ms": 1793750400000,
+      "district": 1,
+      "customer": 1,
+      "lines": [
+        "invalid",
+        {
+          "item": 2,
+          "quantity": 10
+        },
+        {
+          "item": 3,
+          "quantity": 10
+        },
+        {
+          "item": 4,
+          "quantity": 10
+        },
+        {
+          "item": 5,
+          "quantity": 10
+        }
+      ]
+    }
+  ],
+  "scope": "New inputs absent from original recorded workload; includes stock wrap, duplicate item, 15 lines, three abort positions and invalid input"
+}

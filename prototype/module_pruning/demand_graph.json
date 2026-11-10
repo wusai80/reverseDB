@@ -1,0 +1,53 @@
+{
+  "scope": "Manual dependency abstraction of the archived OrderStatus application branch; no automatic graph extraction",
+  "edge_direction": "consumer or observation -> required provider",
+  "nodes": ["app_outcome", "database_state", "terminal_display", "query_audit", "registry_observer", "external_reflector", "customer_lookup", "latest_order", "order_json", "lines_json", "legacy_display", "legacy_sql", "prepared_statement_factory"],
+  "roots": [
+    {"node":"app_outcome"},
+    {"node":"database_state"},
+    {"node":"terminal_display","when":{"retain_terminal_display":true}},
+    {"node":"query_audit","when":{"observe_queries":true}},
+    {"node":"registry_observer","when":{"observe_registry":true}},
+    {"node":"external_reflector","when":{"external_reflection_possible":true}}
+  ],
+  "edges": [
+    {"from":"app_outcome","to":"customer_lookup","kind":"business-error","evidence":"missing-customer check"},
+    {"from":"app_outcome","to":"latest_order","kind":"data-and-business-error","evidence":"selected order ID and no-order check"},
+    {"from":"app_outcome","to":"order_json","kind":"data","evidence":"complete order response"},
+    {"from":"app_outcome","to":"lines_json","kind":"data","evidence":"complete ordered lines response"},
+    {"from":"latest_order","to":"customer_lookup","kind":"data","evidence":"Customer.c_id"},
+    {"from":"order_json","to":"latest_order","kind":"data","evidence":"order.o_id"},
+    {"from":"lines_json","to":"latest_order","kind":"data","evidence":"order.o_id"},
+    {"from":"legacy_display","to":"legacy_sql","kind":"query-definition","evidence":"ordStatGetOrderLinesSQL"},
+    {"from":"legacy_display","to":"customer_lookup","kind":"diagnostic-data","evidence":"Customer.c_id in empty-lines message"},
+    {"from":"legacy_display","to":"latest_order","kind":"data","evidence":"o_id query argument"},
+    {"from":"legacy_display","to":"prepared_statement_factory","kind":"shared-call","evidence":"getPreparedStatement"},
+    {"from":"customer_lookup","to":"prepared_statement_factory","kind":"shared-call","evidence":"getPreparedStatement"},
+    {"from":"latest_order","to":"prepared_statement_factory","kind":"shared-call","evidence":"getPreparedStatement"},
+    {"from":"terminal_display","to":"legacy_display","kind":"data","evidence":"OrderStatus.run orderLines consumption"},
+    {"from":"query_audit","to":"legacy_display","kind":"read-effect","evidence":"archived diagnostic records five versus four queries"},
+    {"from":"registry_observer","to":"legacy_sql","kind":"reflection","evidence":"manual framework registry assumption"},
+    {"from":"external_reflector","to":"legacy_display","kind":"reflection","evidence":"unresolved possible external caller"},
+    {"from":"app_outcome","to":"legacy_display","kind":"exception-control","when":{"legacy_failure_possible":true},"evidence":"archived injected JDBC failure changes final response"},
+    {"from":"app_outcome","to":"legacy_display","kind":"termination-control","when":{"legacy_divergence_possible":true},"evidence":"explicit normal-termination obligation, not an observed divergence"},
+    {"from":"database_state","to":"legacy_display","kind":"write-effect","when":{"legacy_observable_write_possible":true},"evidence":"generic effect obligation; no write observed or claimed in this method"}
+  ],
+  "declared_profile": {
+    "retain_terminal_display":false,
+    "observe_queries":false,
+    "observe_registry":false,
+    "external_reflection_possible":false,
+    "legacy_failure_possible":false,
+    "legacy_divergence_possible":false,
+    "legacy_observable_write_possible":false
+  },
+  "profile_status": "Manual scope declarations and effect assumptions; source hashes and finite tests do not establish these universally",
+  "candidates": {
+    "display_module":["legacy_display","legacy_sql"],
+    "whole_orderstatus_class":["customer_lookup","latest_order","legacy_display","legacy_sql"],
+    "customer_module":["customer_lookup"],
+    "latest_order_module":["latest_order"],
+    "display_plus_shared_helper":["legacy_display","legacy_sql","prepared_statement_factory"],
+    "sql_field_only":["legacy_sql"]
+  }
+}

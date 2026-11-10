@@ -1,0 +1,87 @@
+{
+  "version": 1,
+  "commands": [
+    {
+      "id": "edge-01",
+      "type": "Delivery",
+      "warehouse": 1,
+      "terminal": 1,
+      "clock_ms": 1793836800000,
+      "carrier": 3
+    },
+    {
+      "id": "edge-02",
+      "type": "Delivery",
+      "warehouse": 1,
+      "terminal": 2,
+      "clock_ms": 1793836801000,
+      "carrier": 10
+    },
+    {
+      "id": "edge-03",
+      "type": "Delivery",
+      "warehouse": 1,
+      "terminal": 3,
+      "clock_ms": 1793836802000,
+      "carrier": 1
+    },
+    {
+      "id": "edge-04",
+      "type": "NewOrder",
+      "warehouse": 1,
+      "terminal": 4,
+      "clock_ms": 1793836803000,
+      "district": 10,
+      "customer": 3000,
+      "lines": [
+        {
+          "item": 301,
+          "quantity": 1
+        },
+        {
+          "item": 302,
+          "quantity": 1
+        },
+        {
+          "item": 303,
+          "quantity": 1
+        },
+        {
+          "item": 304,
+          "quantity": 1
+        },
+        {
+          "item": 305,
+          "quantity": 1
+        }
+      ]
+    },
+    {
+      "id": "edge-05",
+      "type": "Delivery",
+      "warehouse": 1,
+      "terminal": 1,
+      "clock_ms": 1793836804000,
+      "carrier": 7
+    },
+    {
+      "id": "edge-06",
+      "type": "OrderStatus",
+      "warehouse": 1,
+      "terminal": 2,
+      "clock_ms": 1793836805000,
+      "district": 10,
+      "customer": 3000
+    },
+    {
+      "id": "edge-07",
+      "type": "StockLevel",
+      "warehouse": 1,
+      "terminal": 3,
+      "clock_ms": 1793836806000,
+      "district": 10,
+      "threshold": 10
+    }
+  ],
+  "scope": "Variant fixture retains only district 1 pending orders 2101 and 2102; skip empty districts, then empty delivery, then new order followed by delivery"
+}

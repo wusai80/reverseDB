@@ -1,0 +1,108 @@
+{
+  "version": 1,
+  "mode": "serial-fixed-order",
+  "clock": "fixed JDBC timestamp bindings; UTC JVM",
+  "transactions": [
+    {
+      "id": "tx-01",
+      "terminal": 1,
+      "type": "NewOrder",
+      "seed": 4200,
+      "clock_ms": 1793664000000,
+      "expected": "commit"
+    },
+    {
+      "id": "tx-02",
+      "terminal": 2,
+      "type": "Payment",
+      "seed": 4201,
+      "clock_ms": 1793664001000,
+      "expected": "commit"
+    },
+    {
+      "id": "tx-03",
+      "terminal": 3,
+      "type": "OrderStatus",
+      "seed": 4202,
+      "clock_ms": 1793664002000,
+      "expected": "commit"
+    },
+    {
+      "id": "tx-04",
+      "terminal": 4,
+      "type": "Delivery",
+      "seed": 4203,
+      "clock_ms": 1793664003000,
+      "expected": "commit"
+    },
+    {
+      "id": "tx-05",
+      "terminal": 1,
+      "type": "StockLevel",
+      "seed": 4204,
+      "clock_ms": 1793664004000,
+      "expected": "commit"
+    },
+    {
+      "id": "tx-abort",
+      "terminal": 2,
+      "type": "NewOrder",
+      "items": [
+        1,
+        2,
+        3,
+        4,
+        -12345
+      ],
+      "quantities": [
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "clock_ms": 1793664004500,
+      "expected": "abort"
+    },
+    {
+      "id": "tx-06",
+      "terminal": 2,
+      "type": "NewOrder",
+      "seed": 4205,
+      "clock_ms": 1793664005000,
+      "expected": "commit"
+    },
+    {
+      "id": "tx-07",
+      "terminal": 3,
+      "type": "Payment",
+      "seed": 4206,
+      "clock_ms": 1793664006000,
+      "expected": "commit"
+    },
+    {
+      "id": "tx-08",
+      "terminal": 4,
+      "type": "OrderStatus",
+      "seed": 4207,
+      "clock_ms": 1793664007000,
+      "expected": "commit"
+    },
+    {
+      "id": "tx-09",
+      "terminal": 1,
+      "type": "Delivery",
+      "seed": 4208,
+      "clock_ms": 1793664008000,
+      "expected": "commit"
+    },
+    {
+      "id": "tx-10",
+      "terminal": 2,
+      "type": "StockLevel",
+      "seed": 4209,
+      "clock_ms": 1793664009000,
+      "expected": "commit"
+    }
+  ]
+}

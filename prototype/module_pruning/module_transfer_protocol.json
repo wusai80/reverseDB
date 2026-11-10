@@ -1,0 +1,24 @@
+{
+  "version": "unchanged-analyzer-module-transfer/v1",
+  "objective": "Measure representation transfer before attempting risk-model transfer; no target-specific repair in this run.",
+  "development_modules": ["NewOrder", "Payment"],
+  "target_modules": ["Delivery"],
+  "reserved_modules": ["OrderStatus", "StockLevel"],
+  "input_archive": "evidence/tpcc-roundtrip/20261103-9954559e225c",
+  "extractors": ["prototype/module_pruning/JdbcBoundaryExtract.java", "scripts/jdbc_boundary_contracts.py", "scripts/cross_layer_dependencies.py"],
+  "freeze": "Hash analyzer, protocol, sources and dependencies before fresh extraction. Identical APIs and summaries for development and target. No manual target slot, SQL sink or guard mapping.",
+  "evaluation_unit": "Module for representation coverage. Static PreparedStatement declarations, setter sites and timestamp roots are denominators, not executions or independent samples.",
+  "measurements": ["attributed statement declarations with finite SQL text", "setter sites with understood value terms", "existing inspect_binding API coverage over distinct owner/slot pairs", "existing timestamp-root sink recovery and unknown reasons"],
+  "risk_evaluation": "Not yet available: no shared candidate-pair representation, target variants or target behavioral labels. Do not convert raw extraction coverage into risk accuracy or give the unmodified module a zero-risk score.",
+  "unknown_policy": "Retain unknown terms and failed/unsupported analyses; never fill absent effects with zero. A partial graph is not a complete capability DAG.",
+  "target_exposure": "Delivery is held out from the current NewOrder/Payment feature-design experiment, not an unseen project. Project source and application executions exist in prior work. This is not an independent blind generalization test.",
+  "next_evaluation_contract": {
+    "split": "Keep original/candidate variants, fixes and scenarios of a target module together. Do not randomly split requests from one module across train/test.",
+    "prediction_freeze": "Freeze representation, fitted source-only weights and target predictions before executing target candidate oracles. Target labels cannot determine feature selection, normalization, thresholds or stopping.",
+    "oracle": "Same ordered inputs, complete response, per-request observation and full nine-table state. Preserve all business data and retain failures and unexecuted suffixes.",
+    "metrics": ["target feature coverage and abstention", "Brier and log loss versus source-only prior on the same scored cohort", "incorrect candidates below the frozen risk threshold", "training-unseen feature values and mechanisms"],
+    "success_scope": "Cross-module evidence within one project only; cross-project generalization requires a separate project-held-out test. No declaration of calibrated deletion probability.",
+    "failure_stop": "Report an unsupported representation or negative transfer without patching the held-out target and rerunning it as if still unseen. Any later adaptation is a development phase with a new reserved evaluation target."
+  },
+  "stop": "One static extraction per development/target module and one unchanged graph recovery. No parser extension, fitting, business executions, performance work or automatic deletion."
+}

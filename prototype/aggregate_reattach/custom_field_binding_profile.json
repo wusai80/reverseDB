@@ -1,0 +1,15 @@
+{
+  "scope": "audited active-superuser/all-CustomField/immediate integer-pairs entry",
+  "django_version": "5.2.17",
+  "postgres_version": 180006,
+  "source_sha256": "2fbb14aa63a0297d9203aff142fc10b8a121110c1387a1644491ff0277a9fa7f",
+  "models_sha256": "7912ae0ef34a5ae0b778ad63ffbd6e73e96c57403522992f4997eed9914096e9",
+  "converter_files": {
+    "/opt/venv/lib/python3.14/site-packages/django/db/backends/postgresql/operations.py": "1edd9958f0fba7e729d9da38b68f979ef5782ccfbd4b24ee6cccfa0eac14e132",
+    "/opt/venv/lib/python3.14/site-packages/django/db/models/fields/__init__.py": "28b0dae4acf4fc0217d10048e8c387f504678e77217e62ee88135c7f13ce329c",
+    "/opt/venv/lib/python3.14/site-packages/django/db/models/expressions.py": "5b8ae281a52ecaec49b98817786d5ebdccfb768d22eb7acd7575276d50f5f12f",
+    "/opt/venv/lib/python3.14/site-packages/django_softdelete/managers.py": "234edf8f9b2f9d343ea8cc522df09ca7af96d75c8af4550b62d3fdde654248fb",
+    "/opt/venv/lib/python3.14/site-packages/django_softdelete/models.py": "b2bdf92d611e709f33c6d3e8cffc53fb978ab7638488f145bdb296c62ff7c3f1"
+  },
+  "audit": "Pinned CustomFieldViewSet/model source plus frozen django_softdelete manager source; schema is checked live"
+}

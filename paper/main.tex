@@ -1,0 +1,1046 @@
+% Anonymous ISSTA 2027 review manuscript, updated 2026-11-10.
+% Submission format does not imply submission or completed artifact release.
+% Target: ISSTA 2027 Research Papers. Retrospective evidence revision.
+% Personal writing skills and evidence inventory are recorded in writing-notes.txt.
+% Built with the existing TinyTeX 2026 installation, acmart v2.20.
+\documentclass[acmsmall,screen,review,anonymous]{acmart}
+\usepackage{booktabs}
+\usepackage{tabularx}
+\setcopyright{none}
+\copyrightyear{}
+\acmYear{2027}
+% Conference-style metadata follows sample-acmsmall-conf.tex.
+% Publication identifiers and rights metadata are assigned after acceptance.
+\acmConference[ISSTA 2027]{International Symposium on Software Testing and Analysis}{September 7--10, 2027}{Singapore}
+\acmBooktitle{ISSTA 2027 Research Papers (submission)}
+\settopmatter{printfolios=true,printacmref=true}
+\acmDOI{}
+\acmISBN{}
+\title[ReverseDB: Functionality-Guided Reconstruction]{ReverseDB: Functionality-Guided Simplification of Reconstructed Database-Backed Applications}
+\author{Anonymous Author(s)}
+\newcommand{\sys}{\textsc{ReverseDB}}
+\newcommand{\obs}{\operatorname{Obs}}
+\newcommand{\dom}{\operatorname{Dom}}
+
+\input{results-tables}
+\begin{document}
+\begin{abstract}
+Reconstructing a capability does not require reproducing the module boundaries
+that originally implemented it. A reconstruction can remove work outside the
+capability's dependencies or fuse required work to eliminate interface crossings.
+These transformations need different semantic arguments, and neither guarantees
+a performance benefit. We present \sys{}, a project-independent framework
+with replaceable candidate, validation, measurement, and selection interfaces.
+Known and possible demand closures support conditional deletion; region-boundary
+obligations support fusion. Only admitted concrete alternatives reach cost
+selection, with the verified original retained when obligations are unresolved.
+We conduct fresh fixed-protocol experiments on all five existing principal
+development subjects: a Java transaction application, alf.io, Oscar, beets, and
+Fossil. Admitted Java fusion and Fossil slicing achieve median-time ratios of
+1.80 and 1.84 on their respective workloads. Alf.io retains its original path.
+Oscar and beets show experimental improvements of 4.4\% and 9.1\%, respectively,
+but remain unadmitted by the common checks; speed cannot close missing semantic
+obligations. A separate four-arm Fossil module analysis shows that SQL-side
+presentation removal supplies most of the benefit, while the value of native
+rendering removal depends on the workload. The same framework selects different
+strategies without project-specific ranking rules. Contracts, recovery adapters,
+and summaries remain reviewed inputs; these development-subject repetitions
+do not establish universal automatic analysis or held-out generalization.
+\end{abstract}
+
+\ccsdesc[500]{Software and its engineering~Software verification and validation}
+\ccsdesc[300]{Software and its engineering~Software performance}
+\keywords{reverse engineering, software reconstruction, program specialization,
+  database applications, software performance}
+\maketitle
+
+\section{Introduction}
+\label{sec:introduction}
+Software reconstruction needs to recover a capability, not necessarily the
+architecture that originally implemented it. A retained function may require
+particular data and effects without requiring every object, module, or interface
+through which the original code produced them. Recovered implementations expose
+an opportunity to reorganize that support, including work distributed across
+application and database boundaries.
+
+Agent-assisted reverse engineering, exemplified by Reverse Engineer Anything
+(REA)~\cite{rea}, motivates this setting. Observations and recovered artifacts
+help formulate a functional hypothesis, but observed executions are an incomplete
+specification. Unvisited rows remain legal data; unexecuted modules may support
+unobserved capabilities. An explicit contract must define the retained entry
+points, input/state domain, execution assumptions, and observations before
+simplification can begin.
+
+Two opportunities follow from examining the support for those observations.
+First, a producer may feed only a capability that is deliberately outside the
+contract. Deleting its final consumer alone leaves its computation in place;
+a useful deletion must cross the boundaries separating producer and consumer.
+Second, an operation may produce a value that is required but expensive or
+unsupported to transfer. Moving its consumers into the same region can retain
+the dependency while removing its external interface. These are different
+semantic arguments: deletion removes unnecessary support, whereas fusion changes
+where necessary support is satisfied.
+
+A framework should accommodate both without assigning a different method to
+each application. We represent a candidate by its bound contract, affected
+regions, artifact, obligations, and evidence. Independent transformation providers
+and validators operate behind common interfaces. A measurement provider supplies
+complete-plan costs; a policy chooses only among admitted alternatives. An
+unknown semantic obligation cannot become removable because a cost model predicts
+that it is rare. Conversely, semantic admission does not establish that enough
+work disappears to improve runtime.
+
+This separation also makes retention a first-class outcome. A profile identifies
+expensive execution, not necessarily removable execution. Two individually
+admissible changes need their own combined validation and timing evidence;
+component savings need not add. The framework can choose one transformation,
+a validated composition, or the original. New projects can supply adapters
+without changing the orchestration or ranking interfaces. This extensibility
+is distinct from universal automatic analysis: a missing backend or unresolved
+effect still requires abstention.
+
+We evaluate all five existing principal development subjects: a controlled
+Java/PostgreSQL transaction application, alf.io, Oscar, beets, and Fossil.
+The study reports admitted transformations, experimental-but-unadmitted
+candidates, and retained-original controls separately. We additionally analyze
+Fossil's SQL-side presentation production and native rendering as two module
+groups, enabling each independently and together. Fixed input sequences,
+complete-data checks, paired schedules, and failure witnesses support the
+measurements. These are development subjects, not a held-out population.
+
+The paper makes two connected contributions. First, it formulates and implements
+a project-independent framework whose replaceable components separate retained
+capability, transformation admission, and cost selection. Known/possible demand
+closures and region-boundary checks supply two concrete realizations. Second,
+it evaluates coverage and performance across all five existing subjects and
+uses module-level ablations to explain which removable work matters. The
+contribution is not a new graph traversal or classical optimizer, nor a claim
+of autonomous whole-program recovery. Its scope is evidence-bound simplification
+with conservative treatment of unsupported cases.
+
+\section{A Capability Can Outlive Its Implementation Boundary}
+\label{sec:example}
+Consider a generic pipeline that selects records, derives intermediate values,
+performs required effects, and emits an observation. The original code distributes
+these stages across modules. A replacement region is a set of operations, not
+necessarily one module. The useful question is what support must cross that
+region's boundary after reconstruction.
+
+\subsection{Deletion Follows the Demand for a Value}
+Suppose a query computes both a required key $k$ and a presentation value $d$.
+A downstream formatter consumes $d$, but the retained entry point emits only
+$k$. Removing the formatter's result does not necessarily stop the query from
+computing $d$. A cross-module slice can remove the producer as well, provided
+its computation has no required effect or possible consumer under the contract.
+A raw field used to derive $d$ may still influence a selection predicate and
+must remain. Values, uses, and effects must be distinguished even when they
+originate in the same database column.
+
+An error in producing $d$ is also observable unless the contract excludes it.
+Thus output irrelevance does not imply effect irrelevance. A strict-error
+contract retains the producer; an unresolved error policy yields unknown.
+The contract changes the roots of demand, not the stored data. A supported
+specialized entry can use a guard, with other entry configurations retaining
+the original implementation.
+
+\subsection{Fusion Changes Whether a Required Value Must Cross}
+Now suppose stage $u_1$ produces $v$ and stage $u_2$ requires it for a state
+update. The value cannot be deleted. If moving $u_1$ alone requires an
+unsupported representation of $v$ across the host/database interface, isolated
+placement fails. Moving $u_1$ and $u_2$ together can make $v$ internal and remove
+that export requirement. Required inputs, outputs, ordering, and transaction
+ownership still constrain the larger region.
+
+\begin{figure}[t]
+\centering
+\fbox{\begin{minipage}{0.91\linewidth}
+\small
+\textbf{Contract:} legal inputs/states $\rightarrow$ retained observations.\\[5pt]
+\textbf{Delete unused support:}
+$[\,\text{produce }d\rightarrow\text{consume }d\,]$
+can disappear only outside possible demand and required effects.\\[5pt]
+\textbf{Internalize required support:}
+$u_1\rightarrow\text{export }v\rightarrow u_2$ becomes
+$[\,u_1\rightarrow v\rightarrow u_2\,]$; $v$ remains necessary.\\[5pt]
+\textbf{Select an implementation:} independent validators $\rightarrow$
+comparable complete-plan costs $\rightarrow$ replacement or original.
+\end{minipage}}
+\caption{Two semantic mechanisms share one decision framework. The contract,
+not module names or execution coverage, determines what must remain.}
+\Description{Deletion removes unnecessary producer-consumer support; fusion
+internalizes a required dependency. Both pass separate semantic checks before
+cost selection, with an original-plan fallback.}
+\label{fig:fusion}
+\end{figure}
+
+Enlargement does not excuse reordering. For example, a read-all/write-all
+pipeline cannot generally become a read-one/write-one loop: repeated keys can
+make a later read observe an earlier write. A missing export codec can cease
+to matter when consumers move; an unsupported required operation remains a
+barrier. This distinguishes a change of boundary from a change of capability.
+
+\subsection{Composition Requires Its Own Evidence}
+Deletion and fusion can affect disjoint operations and still interact through
+runtime costs. A shared setup cost, cache behavior, or an unchanged dominant
+path can prevent isolated savings from adding. The framework therefore ranks
+concrete complete implementations, not the number of modules removed. It
+requires joint validation and measurement for composition, and can retain a
+simpler alternative when incremental benefit is uncertain.
+
+\section{Problem Formulation}
+\label{sec:problem}
+Let $P$ be the reference implementation and $\widehat{F}$ a functional
+hypothesis derived from observations and recovered code. Because those
+observations are incomplete, $\widehat{F}$ is an input to specification, not a
+proof of the software's full capability. We use an explicit contract
+$\Gamma=(E,I,S,A,O)$: retained entry points $E$, legal inputs $I$, database
+states $S$, execution assumptions $A$, and observations $O$ that must be
+preserved. An execution $x\in\dom(\Gamma)$ includes the relevant input,
+initial state, and environmental choices.
+
+A candidate implementation $Q$ is intended to satisfy
+\begin{equation}
+  \obs_{\Gamma}(P,x)=\obs_{\Gamma}(Q,x)
+  \quad\text{for every }x\in\dom(\Gamma).
+  \label{eq:preservation}
+\end{equation}
+Observations include the function's returned values and state changes, and
+may include ordering, exceptions, callbacks, and escaping identity relations.
+An internal event is an obligation when it affects these observations or when
+the contract explicitly preserves it. Recording an event during diagnosis
+does not, by itself, make every original implementation detail immutable.
+Equation~\ref{eq:preservation} states the preservation objective. Our finite
+differential experiments provide evidence for evaluated executions, not a
+proof of this universal statement.
+
+The contract separates deployment specialization from data pruning. A fixed
+plugin configuration can restrict available extension behavior. A successful-
+read assumption can restrict fault behavior. Neither permits excluding legal
+rows or metadata values merely because they did not appear in a recorded
+trace. The experiments retain complete datasets and compare complete relevant
+outputs and database states.
+
+A \emph{region} is a source-bound collection of operations considered for one
+replacement. It can cross methods and original modules. Its description
+contains typed inputs and outputs, required effects and their order,
+transaction ownership, and the premises of available implementations.
+Dependence graphs may contain cycles; the supplied fusion selector operates on an
+explicitly ordered sequence of complete semantic units, including summarized
+loop stages. It does not treat an arbitrary application call graph as a DAG
+from which all unvisited nodes can be deleted.
+
+The optimization objective is lower execution cost among supported candidates
+meeting the contract. Module count is not the objective: deleting a rarely
+executed wrapper can save less than eliminating a repeated transfer. We also
+distinguish eliminating work from an execution path from removing a package
+from the deployed artifact. The present evaluation concerns the former and
+does not establish database-engine binary-size reduction.
+
+\section{Dependency-Guided Simplification}
+\label{sec:method}
+\sys{} separates a semantic admissibility question from a cost decision.
+The common object is a candidate with an explicit contract, source binding,
+affected regions, executable artifacts, validation evidence, and measured cost.
+The candidate's transformation family determines its semantic checker. The
+framework does not branch on project identity.
+
+\subsection{Recovering Obligations Rather Than Trace Coverage}
+\label{sec:recovery}
+The observations in $\Gamma$ become roots for dependency analysis. An operation
+can support a returned value, a later state transition, a control decision, or
+a required failure. Edges therefore include data, control, and required-effect
+dependencies. An absent trace event cannot remove an edge that may matter on a
+legal execution. Source-bound summaries record the relevant operations,
+consumers, ordering, and transaction ownership.
+
+Recovery is currently partial. Frontends combine recovered syntax or bytecode,
+runtime observations, and reviewed summaries. Source hashes establish which
+implementation was analyzed, not summary completeness. Complete treatment of
+dynamic behavior, declared scope, and valid boundary edits remain explicit
+premises. Unresolved effects are retained rather than assigned a low probability
+of mattering. Section~\ref{sec:implementation} identifies the implemented
+frontend boundaries; the method does not infer them from project names.
+
+\subsection{Deletion Through Known and Possible Demand}
+\label{sec:deletion}
+Let $G=(V,E)$ be a finite consumer-to-prerequisite graph whose roots and edges
+have Boolean guards evaluated under contract facts. A guard can be true, false,
+or unknown. Let $K_\Gamma$ be the dependency closure using only known-active
+roots and edges, and $U_\Gamma$ the closure also admitting possibly active ones.
+Thus $K_\Gamma\subseteq U_\Gamma$. For a proposed removal set $D$, the checker
+uses the three-way decision
+\begin{equation}
+ \operatorname{Demand}(D)=
+ \begin{cases}
+  \mathrm{retain}, & D\cap K_\Gamma\ne\varnothing,\\
+  \mathrm{unknown}, & D\cap U_\Gamma\ne\varnothing\text{ or }\neg\mathcal{B},\\
+  \mathrm{conditional\ deletion}, & \text{otherwise},
+ \end{cases}
+ \label{eq:demand}
+\end{equation}
+where $\mathcal{B}$ records established source binding, summary completeness,
+declared scope, and valid boundary edits. Two graph traversals compute the
+closures; each is linear in the supplied graph size. The checker returns a
+required or possible path as a witness when such a path prevents deletion.
+
+The reasoning is conditional: if the summary conservatively includes every
+prerequisite of each retained observation, an operation outside even the
+possible closure cannot be a prerequisite of those roots. This graph property
+does not prove the premise about recovered code. In particular, a fault,
+callback, or lock effect omitted from the summary can invalidate the argument.
+The implementation consequently does not equate a missing recorded edge with
+a proven absence of dependency.
+
+The same checker accepts a graph and contract facts through its public
+interface. Changing retained observations can activate a path and change a
+conditional deletion into retention. Leaving a premise unspecified admits
+possible paths and produces unknown. These are changes in supplied evidence,
+not application-specific rules in the checker.
+
+A lowering must implement the admitted deletion without invalidating the
+remaining region. For an unused scalar SQL projection, the obligations include
+unchanged row production, predicates, ordering, output positions and relevant
+aliases. DISTINCT, grouping, callbacks, errors, and expression evaluation can
+make a seemingly unused projection semantically relevant. A backend must
+establish the appropriate conditions rather than applying a universal
+``unused column'' rule. Runtime guards and original-path fallback can bound
+supported configurations without excluding stored records.
+
+\subsection{Moving the Boundary Around a Required Value}
+Let $p(v)$ be a value's producer and $C(v)$ its known consumers, including
+required external observations. The outgoing values of a region $R$ are
+\begin{equation}
+ B_{\mathrm{out}}(R)=
+ \{v\mid p(v)\in R\ \land\ C(v)\nsubseteq R\}.
+ \label{eq:boundary}
+\end{equation}
+The incoming set contains values whose producer is outside $R$ and which have
+a consumer inside it. Supported representations are required for crossings.
+A value whose producer and consumers are internal needs an internal
+representation but no export codec. Dependency summaries determine these sets;
+incomplete consumers cannot justify an apparent boundary reduction.
+
+Expanding $R$ through all consumers of a value can remove it from
+$B_{\mathrm{out}}(R)$. The dependency survives; its transfer obligation does not.
+This is why feasibility is not monotone in the size of an isolated region:
+a small move can fail on an interface that a larger move eliminates.
+Required external results still cross the new boundary.
+
+Each complete semantic unit also requires a supported implementation whose
+guarantees cover its operations and effects. The region must retain required
+ordering and transaction ownership. Unsupported numeric, string, callback,
+allocation, or identity semantics remain barriers even when the region expands.
+A backend declaration and its evidence must cover those obligations; matching
+a few successful outputs does not supply a missing implementation contract.
+
+The backend emits code and host-side bindings only for layouts it implements.
+A logically admissible partition is not yet an executable candidate. Required
+queries and writes can remain inside a fused function, so fewer outer calls
+do not imply fewer internal database operations. These distinctions apply to
+any adapter, independently of its source language or application identity.
+
+\subsection{Selecting Supported Regions}
+Once several regions are admissible, choosing the largest one is not the
+objective. Moving a single query can preserve behavior while saving no call;
+a larger replacement can still perform nearly all of the expensive work.
+One supplied fusion selector uses a deliberately limited cost proxy to choose
+among feasible intervals. Let $u_0,\ldots,u_{m-1}$ be ordered units and
+$\mathcal{A}$ the admitted intervals. Each original unit has a nonnegative
+affine normal-path JDBC-call cost over the declared parameter domain. A fused
+database region costs one outer execution. The selector minimizes the
+lexicographic objective
+\begin{equation}
+  \bigl(\text{worst-case calls},\ \text{moved units},\
+  \text{database regions}\bigr).
+\end{equation}
+The last two terms break ties in favor of less movement. Keeping one query in
+place is preferred to relocating it without a call reduction.
+
+Set $D[0]=(0,0,0)$ and let $D[j]$ be the best objective for the first $j$
+units. With $c_j$ the worst-case original cost of unit $u_j$, the recurrence is
+\begin{equation}
+ D[j]=\min_{\mathrm{lex}}\left\{
+ \begin{array}{l}
+ D[j-1]+(c_{j-1},0,0),\\
+ D[i]+(1,j-i,1),\quad [i,j)\in\mathcal{A}.
+ \end{array}\right.
+ \label{eq:dp}
+\end{equation}
+Because coefficients are nonnegative over the supplied parameter box, the
+call maximum occurs at its upper bounds. Admission additionally checks that a
+region does not add an unconditional execution on a legal path that previously
+made none. With interval admissibility given, the recurrence makes
+$O(m^2)$ comparisons. The current direct liveness checks add analysis overhead
+beyond that recurrence.
+
+This standard ordered scheme provides an optimum for the supplied units,
+capabilities, and call-count model. The substantive region decision precedes
+it: which dependencies can become internal, and which semantic barriers must
+remain. The evaluation separates this optimizer from candidate admission and compares
+its modeled objective with a simpler greedy policy on the supplied contracts.
+Neither the recurrence nor a lower call count establishes minimal latency.
+This optimizer supplies fusion alternatives to the outer framework; it does
+not rank deletion against fusion or generate every conceivable backend.
+
+\subsection{One Framework, Independent Transformation Implementations}
+\label{sec:framework}
+The framework admits different mechanisms through four interfaces
+(Table~\ref{tab:api}). A provider may wrap recovered-code analysis, an agent,
+a search procedure, or a reviewed experiment. It must return a concrete
+candidate with bindings and evidence. The semantic validator is registered
+by family; unsupported families and unknown verdicts cannot enter ranking.
+A measurement provider supplies complete-plan costs for admitted candidates.
+The selection policy receives only candidates with comparable evidence.
+
+\begin{table}[t]
+\caption{Public extension interfaces. The framework owns evidence binding,
+composition checks, cost comparability, and verified-original fallback.}
+\label{tab:api}
+\small
+\begin{tabularx}{\linewidth}{@{}lX@{}}
+\toprule
+Interface & Contract \\
+\midrule
+\texttt{propose(context, store)} & Supply candidate records; proposing does not admit a plan. \\
+\texttt{validate(context, plan, store)} & Return allow, retain, or unknown, with reasons. \\
+\texttt{measure(context, plan, store)} & Return bound paired latency samples, or abstain. \\
+\texttt{choose(context, plans)} & Select an ID from the admitted, measured alternatives. \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+The context binds source, functional contract, workload, deployment, and timing
+boundary. Artifacts, checker inputs, and validation reports are hash-bound.
+A changed artifact requires revalidation. A failed or unknown semantic verdict
+cannot be overridden by a favorable cost estimate. If baseline bindings are
+invalid, selection stops; if comparable costs are absent, the verified original
+is retained. Plugins are trusted implementations, not a security sandbox:
+the framework checks their evidence envelope but cannot establish the truth
+of arbitrary semantic claims supplied through it.
+
+Composition has its own requirements. Component regions must be disjoint and
+admitted, and their union must match the combined candidate. Disjointness is
+not proof of independence. The exact combined implementation needs its own
+validation and measured whole-plan cost. Overlapping regions require reanalysis.
+The framework never adds component savings to invent a combined measurement.
+This allows deletion and fusion to cooperate without merging their checkers.
+
+\paragraph{A conservative default performance policy.}
+Let $\mathcal{L}_\Gamma$ contain the admitted alternatives and verified original
+$P_0$. For paired block $i$, let $T_i(P)$ be the measured total cost of plan $P$
+in the same bound context. For plans $P,Q$, form
+\begin{equation}
+ g_i(P,Q)=\log T_i(Q)-\log T_i(P).
+\end{equation}
+The default policy requires at least six paired blocks and uses 4,000 bootstrap
+resamples with a fixed seed. Write $\ell(P,Q)$ for the lower fifth-percentile
+bound on mean log gain, capped at the observed mean. Define
+\begin{equation}
+ P\succ Q\quad\Longleftrightarrow\quad\ell(P,Q)>\log(1.02).
+ \label{eq:ranking}
+\end{equation}
+This is an exploratory useful-gain criterion, not semantic confidence or a
+multiplicity-adjusted guarantee. The cap ensures that each dominance edge
+strictly improves observed mean log cost, preventing cycles.
+
+First qualify only alternatives that beat $P_0$. Among those and $P_0$, retain
+plans not dominated by another qualified plan. Prefer fewer transformation
+leaves, breaking ties by geometric latency and stable identifier. Thus an
+uncertain incremental gain does not automatically justify a composition.
+The result is a supported choice among supplied candidates, not a global
+optimum. A different statistical or learned policy can replace this one
+without changing semantic admission. The current implementation recommends
+a plan; it does not deploy it.
+
+\subsection{Validation at the Functional Boundary}
+\label{sec:validation}
+The premise permitting a transformation identifies a useful counterexample.
+Repeated keys challenge a required staging order. An injected failure challenges
+an omitted producer's claimed effect irrelevance. A request outside a runtime
+guard challenges preservation of the original capability. Such tests target
+obligations, rather than merely adding more ordinary successful examples.
+
+Candidates are compared with the reference from identical complete initial
+states and fixed input sequences. Responses, required failures, and complete
+relevant persistent state are checked. SQL trace equality is not the oracle:
+fusion changes outer calls and deletion changes unnecessary reads. Performance
+follows functional checks using the same candidate bindings. Instrumentation,
+timing boundaries, resets, warmups, and schedules are stated per study. Finite
+differential evidence supports tested executions, not the universal objective
+in Equation~\ref{eq:preservation}.
+
+\subsection{Use of AI in the Research Process}
+\label{sec:ai-disclosure}
+OpenAI Codex was used as a tool-using research assistant throughout development
+and evaluation. Its role extended to research design, implementation, execution,
+and interpretation. The researcher supplied the project objectives and constraints,
+including preservation of complete data, conservative treatment of unresolved
+behavior, reuse of the method across subjects, and fixed experimental order.
+AI assistance was used within that directed workflow as follows.
+
+\paragraph{Design and implementation.}
+The assistant inspected recovered Java and native code, pinned Python source, and execution
+records; proposed candidate regions and functional assumptions; and helped
+formulate the dependency descriptions, admission conditions, and cost model.
+It wrote and revised analysis routines, Java/SQL transformations, native specializations, Python
+replacement code, and the scripts used for source binding and artifact checks.
+It also helped select subjects, construct synthetic workloads and semantic
+counterexamples, and specify the paired and factorial experiment protocols.
+These choices were part of an exploratory research process, rather than the
+output of an independently evaluated autonomous reconstruction system.
+
+\paragraph{Execution and analysis.}
+Through command-execution tools, the assistant built the implementations,
+prepared isolated database copies, ran the fixed workloads, and invoked
+comparison and timing scripts. AI assistance was also used to write the
+summary and bootstrap calculations, inspect failed checks, interpret ablations,
+and prepare tables and prose from recorded results. Test inputs and deliberately
+incorrect control implementations were constructed with AI assistance; reported
+outputs, database states, query counts, and elapsed times were obtained by
+executing the implementations. Model-generated predictions were not used as
+substitutes for those measurements.
+
+\paragraph{Verification and limitations.}
+The checks compare candidate executions with original implementations and
+frozen reference records, including complete outputs and relevant database
+state. Source hashes, fixed protocols, raw observations, failure records, and
+offline recomputation support the reported conclusions. However, AI also
+assisted in writing the validation code and interpreting its output, so shared
+mistakes in transformations and checks remain possible. These checks do not
+constitute independent human replication, a proof of complete equivalence, or
+a measurement of the completeness of inferred functionality. Reproducibility
+claims concern the archived implementations and run protocols, rather than
+reproducing the assistant's conversational decisions or benchmarking a
+particular model. The framework policy was developed using earlier archived
+outcomes and frozen before the fresh five-subject repetitions. Those repetitions
+reuse development workloads, and the same blocks supply selection and reported
+costs; they are not a held-out adaptive-selection evaluation. API substitution tests use explicitly
+synthetic cost fixtures and are not application measurements. AI was additionally used for literature discovery, manuscript
+drafting, and editing. The human authors retain responsibility for the
+research claims, references, and final submission.
+
+\section{Prototype and Recovery Boundary}
+\label{sec:implementation}
+The prototype combines the unchanged demand checker and Java fusion checker
+with a strategy-independent orchestration layer. Four Python protocols define
+the extension interfaces. Existing deletion/fusion validators and archived-cost
+providers implement them. Adding a third family requires a provider and
+registered validator, without changing the core. Executable lowering remains
+backend-specific; the APIs do not manufacture a missing implementation.
+
+Java recovery decompiled 13 selected files with Vineflower 1.12.0 and rebuilt
+16 classes. Runtime-loading evidence confirms use of rebuilt classes. Across
+four recovery suites, each implementation processed 62 commands, including 50
+commits, four business aborts, and eight input rejections. Unselected framework
+and dependency bytecode remained. REA 6.8.0 supplied artifact-inspection evidence;
+it did not independently recover transaction semantics. The separate decompiler
+and reviewed contracts supplied that part of the workflow.
+
+Fossil uses an archived Ghidra-recovered SELECT and two previously recompiled
+database wrappers. The specialized native printer is bound to pinned source
+and Clang AST fragments; it is not an automatically recompiled complete Ghidra
+printer. alf.io uses a selected-class decompilation/rebuild loop within the
+original framework. Oscar and beets use pinned Python source/runtime binding
+rather than independent binary recovery. These are deliberately stated recovery boundaries: the study
+evaluates simplification enabled by reconstruction, not a blind autonomous
+reconstruction of complete applications.
+
+Source bindings, semantic summaries, scope choices, and backend integration
+still require review. Hash checks establish consistency with those inputs.
+Passing reports are reviewed evidence rather than independent proofs of their
+relationship to executable semantics. This limitation applies equally to a
+new family registered through the API and to the supplied adapters.
+
+\section{Evaluation}
+\label{sec:evaluation}
+We ask four questions: (RQ1) what evidence supports preserved functionality and
+where the framework abstains; (RQ2) which work disappears and whether it improves
+complete measured execution; (RQ3) how individual module groups contribute; and
+(RQ4) whether the same framework and policy can cover all subjects. We report
+all five existing principal development projects rather than selecting only
+positive cases. Earlier Paperless work was an exploratory prototype outside
+this five-subject sequence, not a new held-out application.
+
+\subsection{A Fixed Five-Subject Replication}
+Before execution, we froze subject order, existing candidate implementations,
+workloads, seeds, semantic engines, ranking policy, and sample schedules. The
+projects ran sequentially, without overlapping performance jobs. Each uses its
+existing full-data oracle and timing boundary. No run was repeated or expanded
+in response to performance. The five subjects perform 402 complete executions
+in total; the separate module analysis adds 508. Transactions within an execution
+are not counted as independent performance samples.
+
+\begin{table}[t]
+\caption{Fresh evaluation coverage. ``Experimental'' candidates are measured
+separately from framework admission; A/A executes identical original code.
+Formal samples are paired blocks within each subject's protocol.}
+\label{tab:coverage}
+\small
+\begin{tabularx}{\linewidth}{@{}lXll@{}}
+\toprule
+Subject & Workload and complete data & Tested arms & Blocks \\
+\midrule
+Java/PostgreSQL & 17 requests; 599,051 rows, nine tables & Four-arm & 8 \\
+alf.io/PostgreSQL & 12 service operations; 63 tables, 20 tickets & Original A/A & 6 \\
+Oscar/PostgreSQL & Four order placements; 97 tables, 94 sequences & Experimental A/B & 8 \\
+beets/SQLite & Complete export; 5,000 media files, five tables & Experimental A/B & 8 \\
+Fossil/SQLite & Hash and branch timeline; complete 2,000-commit fixture & Three-arm & 12 each \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\paragraph{Java.}
+The frozen sequence produces ten commits, three business aborts, and four input
+rejections. Its 13 accepted transactions include nine NewOrder requests and one
+each of Payment, OrderStatus, Delivery, and StockLevel. Four terminal connections
+execute serially under SERIALIZABLE isolation. The four arms are original,
+deletion only, fusion only, and both. Every replay restores all business rows
+and installs the same SQL functions. A persistent JVM uses separate adapter
+class loaders, two warmup replays per arm, and eight formal Williams blocks.
+Formal positions and immediate within-block predecessors are balanced.
+The 40 replays contain 680 requests, with 416 accepted formal transactions.
+
+The timer covers business execution, result construction, and actual commit or
+rollback; it excludes startup, connection establishment, input rejection,
+restoration, and full-state checks. PostgreSQL 18.6 runs in a pinned ARM64
+container with two CPUs, 1.5\,GB memory, and 256\,MB shared buffers. The JVM has
+a 512\,MB heap and two active processors. WAL, fsync, synchronous commit, locks,
+and recovery remain enabled. This TPC-C-like serial workload is not the standard
+TPC-C mix or a throughput benchmark; two warmups do not establish steady JIT state.
+
+\paragraph{alf.io.}
+The common checker retains the original implementation. We therefore repeat
+the official runtime in A/A arms, without installing experimental SQL functions.
+The fixed 12-operation flow includes three successful reservations, queries,
+cancellations, release processing, and an insufficient-stock failure. Each
+replay restores the same 63-table, 20-ticket fixture. Two persistent JVMs use
+the same official code and options; two warmup pairs precede six alternating
+formal pairs, totaling 16 replays and 192 operations. Timing includes service
+calls, result construction, and real transaction completion, but excludes
+Spring-context startup, reset, and observation. Each JVM has a 1\,GB heap and
+two active processors; PostgreSQL uses the same two-CPU/1.5\,GB limits as Java.
+The fixture has no additional-service details, limiting coverage of that path.
+A/A differences cannot be interpreted as optimization gains.
+
+\paragraph{Oscar.}
+A historical experimental adapter combines an ordered read pair while retaining
+miss, update, and allocation paths. It is not admitted as a database region by
+the current checker. Each trial places four orders with real commits in a fresh
+database/backend. Two warmup pairs and eight AB/BA formal pairs produce 80 orders,
+64 formally timed. The primary interval includes adapter installation/removal
+and excludes pricing preparation. Python 3.12.13 and Django 5.2.19 run on the
+local ARM64 macOS host with the original sandbox SQL debug logging. This is
+order-placement latency, not HTTP latency or concurrent throughput.
+
+\paragraph{beets.}
+The pinned 2.14.1 deployment uses Python 3.12.13 and SQLite 3.53.1. Complete
+JSON exports retain all fields, five-table state, and all 5,000 media files.
+Ninety percent of items are album tracks; the rest are singletons. Input order
+and Python hash seed are fixed. The effect-restored experimental candidate
+removes a private read and intermediate model while retaining initialization,
+conversion, and private-state work. Its fixed deployment assumes successful
+original reads and no loaded extensions; full read-error equivalence is not
+claimed, and the common backend contract remains unclosed.
+Two diagnostic exports, two warmup pairs, and eight formal pairs give 22 exports.
+The timer covers the complete direct export entry, candidate installation and
+restoration, media access, and output finalization. It excludes CLI discovery,
+process startup, database copying/opening, and one-time source validation.
+
+\paragraph{Fossil.}
+The pinned 2.28 build uses SQLite 3.52.0 and Clang 21 on the ARM64 macOS host.
+Original, reconstruction-only, and sliced binaries use the same build settings.
+For each of hash and branch-filtered requests, all six arm orders run twice:
+12 blocks, with one separate warmup per arm. Every process receives a full
+copy of the 2,000-commit fixture. Timing includes process startup, database open,
+output capture, and the guard; copying and validation are excluded. Performance
+binaries contain neither diagnostic probes nor deterministic-randomness changes.
+
+Times are compared only within their declared boundaries, never pooled across
+subjects. Ratios of arm medians, medians of paired ratios, and the selector's
+geometric ratios are labeled separately. Bootstrap intervals are exploratory,
+not multiplicity-adjusted production guarantees. Earlier batches remain archived
+and are reported separately where they change interpretation.
+
+\subsection{RQ1: Functional Evidence and Admission Coverage}
+All fresh runs pass their declared full-data/output checks. Every Java replay
+matches frozen ordered responses, per-request observations, full initial/final
+nine-table hashes/counts, and five business invariants. The same discarded
+OrderStatus display-query invocation is removed in deletion-only and combined
+arms; complete order-line JSON and all stored rows remain. Its archived
+query-failure counterexample still prevents a full legacy-error claim.
+
+Every alf.io replay matches 53 frozen response/state/sequence observations.
+Both arms have empty candidate-dispatch logs and load official runtime code.
+Its batch already uses one outer execution. The checker does not silently
+replace Java preparation, exception, or mapping obligations with an unverified
+server loop. The original fallback is a coverage outcome, not a failed timing
+run or proof that no larger optimization exists.
+
+All Oscar trials match ordered business objects and complete 97-table/
+94-sequence state. Four intended handoffs occur per candidate trial; miss cases
+retain their original reads. This validates the executed experimental adapter,
+not larger model-save, callback, ABI, or allocation regions. The common checker
+admits no database region under the supplied contract. Beets' exports likewise
+match complete output bytes, five-table state, and media hashes. The restored
+candidate's local evidence does not close all deployment, effect, encoding,
+and backend obligations in its source-bound description. The framework retains
+the original for both projects even when experimental timing improves.
+
+Fossil completes 106 paired application checks across six full fixtures,
+including 100/2,000-commit histories, metadata/configuration variants, equal
+timestamps, and wiki/Pikchr content. Its matrix includes limits, ordering,
+offsets, filters, traversal, required argument errors, and fallback formats.
+Normal comparisons require exact stdout/stderr/exit and complete repository
+schema/table state. Six paired diagnostics distinguish required query errors
+from excluded presentation errors. The exact hash capability preserves
+selection, limits, notices, and persistent data, but excludes failures confined
+to unused presentation, allocation exhaustion, undefined C behavior, and
+concurrent mutation. Other formats retain the original implementation.
+
+The retained earlier nonce witness is handled only in diagnostic builds for
+one Pikchr fallback comparison, with SQLite PRNG seed 9973. All performance
+runs use unmodified-randomness binaries. Equal-timestamp behavior is evidence
+for the pinned engine, not a general SQL total-order guarantee. The local-checkout
+guard is present but has no checkout-creation test here. These stated limits
+remain part of the result even when every scheduled check passes.
+
+\subsection{RQ2: Work Removed and Fresh Performance}
+\begin{table}[t]
+\caption{Fresh five-subject results: arm medians in milliseconds, original/tested
+median ratio, and paired wins. ``Experimental'' rows are not framework-admitted
+speedups; alf.io is identical-code A/A variation. Fossil has two workloads.
+Different timing boundaries are not pooled.}
+\label{tab:performance}
+\small\PrimaryResults
+\end{table}
+
+Java fusion reduces outer JDBC executions from 267 to 89 and mixed median
+latency by 44.54\%, winning all eight blocks. Required reads, writes, staging
+order, and transaction completion remain. Fossil's hash slice reduces median
+whole-process time by 45.78\%, winning 12/12 blocks; its branch workload improves
+by 18.15\%, also winning 12/12. Reconstruction-only medians are 18.295 and
+11.616\,ms, close to original medians of 18.386 and 11.690\,ms. The control
+supports attribution to slicing rather than reconstruction alone.
+
+\begin{table}[t]
+\caption{Fresh Java deletion/fusion factorial. Eight blocks per arm preserve
+identical full data and requests. Component medians are not additive.}
+\label{tab:composition}
+\small\JavaCompositionResults
+\end{table}
+
+Deletion alone consistently removes one JDBC execution, yet its mixed median
+is 3.02\% slower than original, with only one paired win. Adding it to fusion
+changes the median from 48.153 to 46.932\,ms, with five wins in eight blocks.
+The original experiment's 0.79\% incremental median reduction and the new
+2.53\% reduction are kept in separate batches; neither establishes a robust
+additional gain under the fixed selector. A reusable deletion criterion does
+not imply a reusable performance benefit for a rarely executed region.
+
+Alf.io's retained arm happens to have a 2.65\% lower median, with five of six
+paired wins. Both arms run identical original code. This is measurement and
+execution variation, not acceleration by the framework, and not a universal
+noise threshold for the other subjects.
+
+Oscar's experimental adapter removes four of 187 calls. In this fresh batch,
+its median improves by 4.38\%, with seven of eight wins; the median paired
+ratio is 1.0663 with exploratory interval [1.0358, 1.0977]. The earlier batch
+had only three wins and interval [0.9063, 1.0844]. We retain both rather than
+calling Oscar a permanent performance failure or using only the favorable
+batch. The shared gate's abstention is unchanged because timing does not
+supply its missing semantic obligations.
+
+Beets' experimental candidate changes queries from 18,002 to 13,502 and
+untimed model constructions from 14,000 to 9,500. Its fresh median improves
+by 9.14\%, winning all eight blocks; the median paired ratio is 1.1075 with
+interval [1.0899, 1.1217]. This is useful bounded mechanism evidence despite
+incomplete framework admission. Earlier matched beets ablations attributed
+most benefit to read removal, with no stable model-only advantage. We do not
+relabel the combined candidate's speedup as an isolated object-removal effect.
+
+\subsection{RQ3: Individual Module Analysis on Fossil}
+\label{sec:modules}
+We chose the last subject in the fixed sequence for a deeper analysis before
+running the module study. The units are semantic module groups crossing source
+boundaries: SQL-side presentation production, and C-side presentation consumption.
+The first group includes five unused projections, their wiki callback/configuration
+work, and the query-construction prepass. The second includes formatting,
+private-status lookups, and general format substitution. Row production,
+ordering, required aliases, SQL lifecycle, full hash output, limits, notices,
+and persistent data remain protected.
+
+The implementation uses the existing admitted slice with each factor switched
+off in turn. SQL-only keeps the original C printer; C-only keeps the original
+full query and prepass. The combined cell is byte-identical source to the earlier
+slice. Every arm uses the same recovered database wrappers and compiler options.
+The reconstructed original cell is separately compared with the official binary.
+These are source-bound ablations of one candidate, not new project-specific
+optimization algorithms or an automatically proved native frontend.
+
+Before timing, 306 arm/reference comparisons across the six fixtures and 17
+request variants match exact normal outputs and complete state. Sixteen module
+diagnostics check work counts, required event-read failures, excluded wiki
+failures, and retained comment-format failures. No cell is rejected. Two warmup
+blocks and eight four-arm Williams blocks run for each of hash and branch
+requests, keeping whole-process timing free of probes. In total this study
+performs 508 executions; all full database snapshots match.
+
+\begin{table}[t]
+\caption{Fossil module factorial. Times are eight-block arm medians. Work counts
+are separate untimed diagnostics for the 2,000-row hash request, not total SQL
+counts. The original cell uses reconstructed wrappers common to all cells.}
+\label{tab:modules}
+\small\ModuleResults
+\end{table}
+
+The factors remove distinct work (Table~\ref{tab:modules}). SQL-only removes
+2,000 wiki callbacks and three wiki-configuration reads, but keeps 2,000 private
+status reads. C-only removes those private reads and the hash-configuration
+lookup, but retains the callbacks. Combined removal eliminates both sets.
+A required event-table access still fails in every cell when denied; a wiki
+failure disappears only in cells removing its SQL producer. Comment-bearing
+fallbacks retain it in every cell. These controls locate the semantic boundary
+of each removal rather than inferring it from runtime alone.
+
+For the hash workload, median paired speedups are 1.719 for SQL-only, 1.088 for
+C-only, and 1.856 for both, each with eight wins against original. Adding C-side
+removal to SQL-only has a paired ratio of 1.060 and seven wins. For the branch
+workload, SQL-only yields 1.148, while C-only yields 1.005 with an exploratory
+interval [0.9412, 1.0648]. Adding C-side removal to SQL-only has ratio 1.027,
+five wins, and interval [0.9499, 1.0599]. The contribution of native rendering
+removal is therefore workload-dependent even within one subject.
+
+The within-block interaction is
+$T_{SQL}+T_C-T_O-T_{SQL+C}$, positive for savings beyond the sum of isolated
+savings. Median interactions are $-0.398$\,ms for hash, interval
+[$-2.145$, $0.142$], and $0.342$\,ms for branch, interval [$-1.079$, $1.124$].
+Neither establishes positive synergy. The groups were selected from the
+existing transformation structure; this study does not independently time every
+function, callback, or database-engine subsystem.
+
+\subsection{Additional Mechanism Controls}
+\label{sec:ablations}
+A separate earlier Java factorial enabled NewOrder and Payment fusion
+independently, with 40 full replays and all results/state matching. Table~\ref{tab:java-ablation}
+is kept as a separate batch, not pooled with the fresh study. NewOrder removes
+173 calls and accounts for most of that fixed workload's benefit; Payment removes
+five. The interaction interval [$-3.64$, $1.36$]\,ms does not support positive
+synergy. Unchanged component timers also vary.
+
+\begin{table}[t]
+\caption{Historical Java region factorial, retained separately. Paired ratios
+are medians of eight within-block original/candidate ratios.}
+\label{tab:java-ablation}
+\small\JavaRegionResults
+\end{table}
+
+\paragraph{Region size versus optimizer choice.}
+We keep the same admission, effect, transaction, and codec constraints and
+limit a region to one, two, or four consecutive semantic units. These widths
+are not counts of classes or SQL statements. We also compare the full DP
+with a simple policy that, at the next unit, takes the longest admissible
+interval that reduces worst-case calls, otherwise retaining the host unit.
+Table~\ref{tab:placement-ablation} reports symbolic costs over the complete
+declared parameter domains. The restricted layouts are not generated or
+timed, and the table is not evidence of their runtime speedups.
+
+\begin{table}[t]
+\caption{Region-granularity and selection ablation on the supplied contracts.
+$n\in[5,15]$ is the number of NewOrder lines and $b\in\{0,1\}$ the Payment
+credit branch. All plans pass the unchanged admission checks.}
+\label{tab:placement-ablation}
+\small
+\begin{tabular}{@{}lcc@{}}
+\toprule
+Policy & NewOrder calls & Payment calls \\
+\midrule
+Original & $11+2n$ & $8+b$ \\
+At most one unit & $11+2n$ & $8+b$ \\
+At most two units & $7+2n$ & $5+b$ \\
+At most four units & $4$ & $3+b$ \\
+Longest admissible greedy & $1$ & $3+b$ \\
+Full DP & $1$ & $3+b$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Single-unit placement does not reduce calls. Enlarging the region makes
+otherwise internal values cease to require a boundary representation and
+enables fewer calls. However, greedy and DP select equal objective values
+on both contracts. These examples support the importance of the candidate
+region boundary; they do not establish an empirical advantage of DP over
+a simple selector.
+
+
+\paragraph{Semantic controls.}
+Requiring presentation errors makes the unchanged demand checker retain the
+Fossil and Java display paths; leaving that premise unspecified yields unknown.
+Seven Java observation/effect-premise changes also cause retention. These
+controls are never speed candidates. Unsupported codecs, effect descriptions,
+transaction changes, and missing joint validation continue to block fusion or
+composition. The original algorithms and thresholds were not relaxed to obtain
+five runnable optimization successes.
+
+\subsection{RQ4: One Framework Across Five Subjects}
+\begin{table}[t]
+\caption{Unchanged policy applied to fresh development-subject measurements.
+Ratios compare each selected alternative with its own baseline. Three subjects
+retain original on admission grounds; their experimental timing cannot override
+that decision. Selection and reporting use the same blocks, not held-out costs.}
+\label{tab:selection}
+\small\SelectionResults
+\end{table}
+
+The same APIs select fusion for Java, deletion for both Fossil contexts, and
+original for alf.io, Oscar, and beets. The first two use the existing family
+checkers. Beets' adapter replays the existing common source-description review;
+access observations and passing local tests do not close its missing backend
+contract. Adapter construction and binding are recorded separately from the
+unchanged framework core and ranking policy.
+
+For Java, both fusion and composition remain on the non-dominated frontier.
+The fresh geometric composition/fusion ratio is 1.017, with lower bound 0.979,
+below the 1.02 criterion. The policy chooses the simpler fusion plan. The
+module factorial is mechanism analysis and was not added post hoc to this
+five-subject candidate portfolio to improve its headline choice.
+
+The earlier selector has 52 controls, and its API implementation has 22 tests
+including a third strategy, independent measurement/policy substitution, and
+refusal to rank rejected candidates. The fresh portfolio outputs are replayed
+through those same APIs. These controls establish substitutability and
+consistent evidence handling, not a statistical population of applications.
+A source-path binding error in the new beets evidence adapter was corrected
+without rerunning applications or changing semantics or policy; the incomplete
+binding record remains archived.
+
+The policy was developed from earlier outcomes and frozen before these fresh
+repetitions. All five subjects were already development projects, and the
+same timing blocks feed selection and reporting. Thus the results broaden
+coverage and test repeatability, but do not establish held-out project transfer
+or unbiased prediction of a selected plan's future cost. Prospective evaluation
+must separate calibration and test blocks and include construction, analysis,
+and measurement overhead.
+
+\section{Discussion and Threats to Validity}
+\label{sec:discussion}
+\paragraph{The contribution beyond separate transformations.}
+Deletion and fusion have different admissibility arguments but the same outer
+decision problem: which concrete implementation satisfies the retained capability
+with worthwhile cost reduction? The framework makes those arguments replaceable
+without allowing performance evidence to override them. Its substantive claim
+is this separation and the dependency-conditioned candidate boundary, not that
+an API, graph traversal, bootstrap, or classical DP is independently novel.
+Comparison with existing specialization and partitioning systems remains
+necessary to establish relative coverage, effort, and novelty.
+
+\paragraph{Capabilities exceed observations.}
+A correct transformation of an incomplete contract can omit a needed capability.
+Our experiments retain complete data and make exclusions explicit, but do not
+measure inferred-contract completeness. Source binding is weaker than semantic
+summary completeness. In particular, excluding presentation errors is a real
+scope decision; it must not be described as preserving all original behavior.
+Unknown obligations retain code even if a statistical model predicts low use.
+
+\paragraph{Transfer and automation.}
+The same demand algorithm is exercised on Fossil and Java, and the same outer
+policy on all five subjects. This establishes reuse on supplied descriptions,
+not automatic graph extraction or cross-language lowering. Java uses selected
+class decompilation, Fossil uses partial native recovery and reviewed source
+specialization, and Oscar uses pinned Python source. These unequal frontends
+prevent a claim of end-to-end autonomous REA reconstruction. Language alone
+neither determines legality nor predicts removable cost.
+
+\paragraph{Selection and measurement bias.}
+The fresh study includes all five existing principal development subjects,
+which were themselves selected through earlier exploration. This reduces
+positive-case omission but does not create a random or held-out sample. Small local samples,
+cache state, container scheduling, JIT warmup, first-use planning, and debug
+logging can affect latency. No performance interval represents concurrent
+throughput. Different timing boundaries are not pooled. A policy frozen before repeated development workloads still cannot establish
+future-project performance or eliminate the original subject-selection bias.
+
+\paragraph{Scope of database simplification.}
+The candidates remove application-conditioned execution work around database
+use. They preserve business data and keep required database transactions,
+locking, and recovery active. Fewer outer calls or fewer presentation reads
+do not establish removal of those engine subsystems or reduction in deployed
+binary size. Analysis, reconstruction, and candidate-evaluation costs are
+outside online timings; end-to-end break-even remains unmeasured.
+
+\section{Related Work}
+\label{sec:related}
+\paragraph{Agent-assisted reverse engineering.}
+REA provides an agent-facing reverse-engineering workflow spanning application
+behavior and program artifacts~\cite{rea}. It motivates our setting but is not
+the simplification mechanism proposed here. Our observed use establishes
+artifact inspection; selected-class decompilation and functional contracts
+come from separate tools and analyst work. This paper therefore complements
+recovery with a study of what implementation machinery can be removed once a
+target function is specified.
+
+\paragraph{Dependence analysis and specialization.}
+The program dependence graph makes data and control relationships explicit
+for program optimization~\cite{pdg}. \sys{} uses this established perspective
+and adds explicit application--database boundary obligations in its prototype;
+it does not claim that dependence tracking itself is new. Application
+specialization also has substantial prior work. LMCAS applies partial
+interpretation and partial-evaluation optimizations to configuration-dependent
+program behavior~\cite{lmcas}. Our cases instead examine retained database
+functions whose required work crosses host/database interfaces and SQL/native
+callback boundaries. The current evidence concerns this application--database setting.
+
+\paragraph{Application--database partitioning.}
+Pyxis combines profiling and dependency analysis to partition database-backed
+application code between an application server and a database server, reducing
+control transfers and transferred data under resource constraints~\cite{pyxis}.
+It is a close predecessor to our transaction-fusion realization. Our current
+ordered selector is narrower, using supplied contiguous units and backend
+capabilities. The reconstruction argument additionally considers capability-conditioned deletion
+and selection among independently checked transformation families. We do not attribute
+the basic benefit of moving computation near data to \sys{} or claim a
+measured advantage over Pyxis.
+
+\paragraph{Relationalizing imperative computation.}
+QBS synthesizes invariants and postconditions in a theory of ordered relations
+to translate application fragments into SQL~\cite{qbs}. Froid transforms
+imperative user-defined functions into relational expressions that can be
+optimized with their calling queries~\cite{froid}. Both demonstrate that
+implementation boundaries can hide database optimization opportunities.
+Our focus is the retained functionality of a reconstructed application and the
+dependencies that permit cross-module simplification, including operations
+that must stay in the host. The current evaluation compares candidates with
+their reference implementations; it does not benchmark these systems or
+establish general improvement over relational optimization.
+
+\section{Conclusion}
+A project-independent reconstruction framework can share contracts, evidence,
+and selection interfaces while retaining distinct transformation semantics.
+Deletion asks whether support lies outside possible capability demand; fusion
+asks whether required dependencies can become internal to a new region. Cost
+selection follows these arguments and cannot replace them.
+
+Fresh experiments across all five existing subjects show admitted benefits,
+retained originals, and experimentally faster candidates with unresolved
+admission. The Fossil module factorial identifies SQL-side production as the
+main removable cost and shows that native rendering savings depend on workload.
+These results argue for measuring concrete complete plans and reporting
+abstention, rather than equating removal count with success. Automatic recovery,
+prospective transfer, and comparisons with existing methods remain open.
+
+\section*{Data Availability}
+The local archive contains pinned sources and artifacts, fixed protocols,
+complete-output/state comparisons, raw measurements, and offline audits.
+A generated results ledger recomputes the paper's principal timing tables from
+those records and records their hashes. The framework API checks, fresh five-subject executions, module factorial,
+and older batches are separately identified. Prior negative and positive
+measurements remain in the archive, including the earlier Oscar no-gain batch.
+
+An anonymous reviewer-accessible replication package is not currently available.
+Machine-specific paths, local dependencies, and environment-bound scripts require
+anonymization and packaging. The accompanying manuscript-source package includes
+the generated table source but is not an experimental replication package.
+No claim of independent replication or portable artifact release is made.
+
+\bibliographystyle{ACM-Reference-Format}
+\bibliography{references}
+\end{document}

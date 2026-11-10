@@ -1,0 +1,22 @@
+{
+  "version": "module-external-challenge/v1",
+  "model_archive": "evidence/module-effects/20261104-8d03ce7f500f",
+  "model_name": "effect_context",
+  "challenge_domain": "new-finite-challenge/v1",
+  "program_count": 16,
+  "input_domains": {"x": [-2, -1, 0, 1, 2], "flag": [false, true]},
+  "limited_probe": {"x": 0, "flag": true},
+  "source_groups": {"finite": "newly-authored-challenge", "real": "benchbase-tpcc"},
+  "classification_cutoff": 0.5,
+  "classification_rule": "q < 0.5 predicts removable ONLY for diagnostic classification; equality predicts necessary; never authorizes deletion",
+  "domain_rule": "Use actual new domain for predict(); it must abstain. Separately inspect the frozen cell/prior numerically as an out-of-domain diagnostic, never relabel the domain to bypass predict().",
+  "feature_rule": "Frozen extractor only; discarded_result is explicit source metadata for whether the marked region provides a returned scalar, independently of side effects; limited_probe_pass is the sole permitted paired observation before predictions are sealed.",
+  "labels": "After sealing all features/predictions, exhaustively compare original/deleted complete returned values or exception type/message over each finite Cartesian domain. Unsupported extraction is abstention, never a negative label.",
+  "observations": "Finite programs have fresh local state only; returned payload includes any contracted persistent-state proxy. No claim about arbitrary data, real DB effects, divergence or environment.",
+  "real_review": "Three source-bound modules from existing decompiled BenchBase classes, not used in feature fitting; manually audit required effects under a retained committed-state contract. No executable labels without new differential execution; all real scores abstain.",
+  "metrics": ["diagnostic Brier/log loss vs frozen 0.5 prior", "diagnostic false-removal and false-retention counts with denominators", "extraction coverage and unseen cells", "operational abstention and deletion authorization"],
+  "independence": "New standalone sources, authored by the same researcher with development results known; NOT independently collected/blind external benchmark. Shared source groups forbid treating programs/modules as independent real-world population samples.",
+  "freeze": "Archive model, extractor, predictor, protocol, corpus, source metadata, runner and real source files with SHA256 before executing any case. No fit() call, no threshold or feature tuning.",
+  "stop": "One fixed 16-program challenge and three source audits. Preserve errors/failures. No performance run or further corpus expansion this round.",
+  "production_authorized": false
+}

@@ -1,0 +1,233 @@
+{
+  "version": 1,
+  "commands": [
+    {
+      "id": "tx-01",
+      "type": "NewOrder",
+      "terminal": 1,
+      "clock_ms": 1793664000000,
+      "warehouse": 1,
+      "district": 1,
+      "customer": 707,
+      "lines": [
+        {
+          "item": 24295,
+          "quantity": 6
+        },
+        {
+          "item": 68319,
+          "quantity": 4
+        },
+        {
+          "item": 2735,
+          "quantity": 3
+        },
+        {
+          "item": 57055,
+          "quantity": 9
+        },
+        {
+          "item": 13858,
+          "quantity": 2
+        },
+        {
+          "item": 81621,
+          "quantity": 2
+        },
+        {
+          "item": 73255,
+          "quantity": 1
+        },
+        {
+          "item": 10054,
+          "quantity": 7
+        },
+        {
+          "item": 64993,
+          "quantity": 8
+        },
+        {
+          "item": 31107,
+          "quantity": 7
+        },
+        {
+          "item": 65253,
+          "quantity": 7
+        },
+        {
+          "item": 56551,
+          "quantity": 2
+        }
+      ]
+    },
+    {
+      "id": "tx-02",
+      "type": "Payment",
+      "terminal": 2,
+      "clock_ms": 1793664001000,
+      "warehouse": 1,
+      "district": 1,
+      "customer_district": 1,
+      "customer": 22,
+      "amount": 2944.67
+    },
+    {
+      "id": "tx-03",
+      "type": "OrderStatus",
+      "terminal": 3,
+      "clock_ms": 1793664002000,
+      "warehouse": 1,
+      "district": 1,
+      "customer": 479
+    },
+    {
+      "id": "tx-04",
+      "type": "Delivery",
+      "terminal": 4,
+      "clock_ms": 1793664003000,
+      "warehouse": 1,
+      "carrier": 1
+    },
+    {
+      "id": "tx-05",
+      "type": "StockLevel",
+      "terminal": 1,
+      "clock_ms": 1793664004000,
+      "warehouse": 1,
+      "district": 1,
+      "threshold": 10
+    },
+    {
+      "id": "tx-abort",
+      "type": "NewOrder",
+      "terminal": 2,
+      "clock_ms": 1793664004500,
+      "warehouse": 1,
+      "district": 1,
+      "customer": 1,
+      "lines": [
+        {
+          "item": 1,
+          "quantity": 1
+        },
+        {
+          "item": 2,
+          "quantity": 1
+        },
+        {
+          "item": 3,
+          "quantity": 1
+        },
+        {
+          "item": 4,
+          "quantity": 1
+        },
+        {
+          "item": 100001,
+          "quantity": 1
+        }
+      ]
+    },
+    {
+      "id": "tx-06",
+      "type": "NewOrder",
+      "terminal": 2,
+      "clock_ms": 1793664005000,
+      "warehouse": 1,
+      "district": 1,
+      "customer": 101,
+      "lines": [
+        {
+          "item": 57043,
+          "quantity": 4
+        },
+        {
+          "item": 64991,
+          "quantity": 5
+        },
+        {
+          "item": 40678,
+          "quantity": 3
+        },
+        {
+          "item": 21974,
+          "quantity": 7
+        },
+        {
+          "item": 73415,
+          "quantity": 1
+        },
+        {
+          "item": 33443,
+          "quantity": 5
+        },
+        {
+          "item": 36231,
+          "quantity": 4
+        },
+        {
+          "item": 23911,
+          "quantity": 4
+        },
+        {
+          "item": 10055,
+          "quantity": 6
+        },
+        {
+          "item": 8926,
+          "quantity": 10
+        },
+        {
+          "item": 64101,
+          "quantity": 5
+        }
+      ]
+    },
+    {
+      "id": "tx-07",
+      "type": "Payment",
+      "terminal": 3,
+      "clock_ms": 1793664006000,
+      "warehouse": 1,
+      "district": 1,
+      "customer_district": 1,
+      "customer": 727,
+      "amount": 3792.22
+    },
+    {
+      "id": "tx-08",
+      "type": "OrderStatus",
+      "terminal": 4,
+      "clock_ms": 1793664007000,
+      "warehouse": 1,
+      "district": 1,
+      "customer": 1007
+    },
+    {
+      "id": "tx-09",
+      "type": "Delivery",
+      "terminal": 1,
+      "clock_ms": 1793664008000,
+      "warehouse": 1,
+      "carrier": 1
+    },
+    {
+      "id": "tx-10",
+      "type": "StockLevel",
+      "terminal": 2,
+      "clock_ms": 1793664009000,
+      "warehouse": 1,
+      "district": 6,
+      "threshold": 10
+    }
+  ],
+  "provenance": {
+    "source": "evidence/tpcc-replay/20261103-7e3eaafec61d/replay_a/transactions.json",
+    "sha256": "f499ad8aeb191c79b1fe5f669ecc3c244b10a0bb3e63ae143d5a3c715110bb3a",
+    "transformations": [
+      "Resolve selected customer to ID",
+      "Round float payment to original two-decimal input",
+      "Replace invalid sentinel -12345 with nonexistent positive item 100001"
+    ]
+  }
+}

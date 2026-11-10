@@ -1,0 +1,30 @@
+{
+  "version": "sql-delta-module-risk-transfer/v1",
+  "development_modules": ["Payment", "Delivery"],
+  "target_modules": ["OrderStatus", "StockLevel"],
+  "scenarios": ["transaction_edges", "delivery_edges"],
+  "commands_per_candidate": 34,
+  "maximum_scheduled_requests": 408,
+  "candidate_plan": [
+    {"id":"payment_identity","module":"Payment","method":"updateWarehouse","old":null,"new":null},
+    {"id":"payment_zero","module":"Payment","method":"updateWarehouse","old":"W_YTD = W_YTD + ?","new":"W_YTD = W_YTD + (? + 0)"},
+    {"id":"payment_one","module":"Payment","method":"updateWarehouse","old":"W_YTD = W_YTD + ?","new":"W_YTD = W_YTD + (? + 1)"},
+    {"id":"delivery_identity","module":"Delivery","method":"getOrderId","old":null,"new":null},
+    {"id":"delivery_zero","module":"Delivery","method":"getOrderId","old":"NO_D_ID = ?","new":"NO_D_ID = (? + 0)"},
+    {"id":"delivery_reverse","module":"Delivery","method":"getOrderId","old":"ORDER BY NO_O_ID ASC","new":"ORDER BY NO_O_ID DESC"},
+    {"id":"order_identity","module":"OrderStatus","method":"getOrderDetails","old":null,"new":null},
+    {"id":"order_zero","module":"OrderStatus","method":"getOrderDetails","old":"O_W_ID = ?","new":"O_W_ID = (? + 0)"},
+    {"id":"order_reverse","module":"OrderStatus","method":"getOrderDetails","old":"ORDER BY O_ID DESC","new":"ORDER BY O_ID ASC"},
+    {"id":"order_limit","module":"OrderStatus","method":"getOrderDetails","old":"LIMIT 1","new":"LIMIT 2"},
+    {"id":"stock_boundary","module":"StockLevel","method":"getStockCount","old":"S_QUANTITY < ?","new":"S_QUANTITY <= ?"}
+  ],
+  "model": "Reuse interaction_risk_pilot.fit/predict: family-weighted ridge logistic, fixed training-only Beta(1,1) prior intercept, train-only centering, lambda=1. One fit using six development candidates, module as family. Fixed diagnostic threshold=0.5, no threshold/lambda/feature search.",
+  "features": ["value_change_fraction","predicate_changed","ordering_changed","limit_changed","parameter_use_change","numeric_literal_mass_delta"],
+  "label": "At least one complete response, per-request observation or whole nine-table state difference from original in this fixed protocol, or application failure. Zero means no difference observed, not all-input equivalence.",
+  "freeze": "Freeze candidates, features, extractor and model settings before any candidate execution. Execute development candidates first; persist fitted coefficients and every target prediction/abstention before executing a target. No target label enters fit.",
+  "scope": "Relative single-statement SQL-only rewrites of real decompiled classes. Source construction and fresh AST confirm identical surrounding Java/bindings and unchanged other SQL. Existing unknown Java terms remain unknown; scores are conditional structural diagnostics, not whole-module scores. No result-set liveness reasoning or SQL semantics is proved.",
+  "evaluation": "Report target coverage, same-cohort Brier/log loss versus training prior, fixed-threshold errors, ordering of observed labels, unseen feature values and training-constant columns. Unsupported SQL candidates abstain, remain in the total denominator and still undergo behavior validation.",
+  "oracle": "Independent full restore per scenario/arm; frozen request order and clocks; same complete data, WAL/fsync and SERIALIZABLE. Compare complete endpoint responses, before/after observations, initial/final nine-table row hashes, commit/rollback traces. Retain invariants even when violated; do not assert candidate correctness. Verify actual candidate class and mutated SQL executed.",
+  "exposure": "One project, previously seen modules and scenarios; held out from this fit only. Candidate choices use known syntax and likely mechanisms, not blind random samples. Identity/neutral/mutant arms are correlated, shared mutation mechanisms cross modules. Development ranking and target losses are not calibrated generalization probabilities.",
+  "stop": "Original plus 11 candidates, two scenarios each, at most 408 requests and one model fit. No added samples, target repair, model tuning, performance claim or deployment. Unexpected harness failure preserved; only harness repairs may resume identical candidates/protocol with an explicit deviation record."
+}

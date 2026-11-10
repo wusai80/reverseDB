@@ -1,0 +1,16 @@
+{
+  "profile": "tpcc-application-adapter/order-status/v1",
+  "root": "TpccApp.reference(Connection, command[type=OrderStatus])",
+  "module": "OrderStatus.getOrderLines + ordStatGetOrderLinesSQL",
+  "observations": ["complete JSON response", "remaining business errors", "database state"],
+  "excluded_capabilities": ["BenchBase OrderStatus.run terminal display", "arbitrary reflective method entry", "trace diagnostics"],
+  "environment": "serial fixed snapshot; normal JDBC/formatter completion; no SQL read side effects or external query observers",
+  "universal_fault_equivalence": false,
+  "automatic_module_discovery": false,
+  "performance_cases": [[1,1],[1,2],[2,1]],
+  "warmups_per_arm": 5,
+  "blocks": 30,
+  "schedule_seed": 20261104,
+  "arms": ["original", "pruned"],
+  "stop": "one module, fixed cases and schedule; preserve negative results; no tuning"
+}

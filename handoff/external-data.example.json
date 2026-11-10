@@ -1,0 +1,12 @@
+{
+  "schema": "reversedb-external-downloads/v1",
+  "artifacts": [
+    {
+      "filename": "historical-evidence.tar.gz",
+      "url": null,
+      "sha256": null,
+      "bytes": null,
+      "note": "Template only. Obtain real metadata from the supervisor. Do not commit signed URLs."
+    }
+  ]
+}

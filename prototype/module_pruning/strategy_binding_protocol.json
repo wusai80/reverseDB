@@ -1,0 +1,25 @@
+{
+  "version": "python-strategy-binding/v1",
+  "source_archive": "evidence/module-source-labels/20261104-0593df8277a1",
+  "source_file": "sources/paperless-ngx/src/documents/bulk_download.py",
+  "roots": [
+    {"class": "OriginalsOnlyStrategy", "method": "add_document"},
+    {"class": "ArchiveOnlyStrategy", "method": "add_document"},
+    {"class": "OriginalAndArchiveStrategy", "method": "add_document"}
+  ],
+  "contexts": {
+    "fixed_false": {"follow_formatting": [false]},
+    "fixed_true": {"follow_formatting": [true]},
+    "explicit_both": {"follow_formatting": [false, true]},
+    "unknown_option": {}
+  },
+  "scope": "Single-inheritance local classes, ordinary methods, a Boolean constructor selector assigning a bound self.method to the same self.slot in both branches. Derive names/targets from AST, not program-specific target names or labels.",
+  "contract": "Constructor then declared root method, fixed ordinary Boolean domain or unknown option. Exact source classes, no external reflection/monkeypatching, receiver escape, subclasses outside source, or additional direct entrypoints. External calls remain unsummarized.",
+  "parameter_rule": "Explicit singleton domains narrow binding. Explicit false/true or an absent parameter fact retains both possible targets; a default value is reported but never silently substitutes for an unknown caller argument.",
+  "graph": "Root-to-provider edges: constructor bind-time lookup, entry invocation, self-method invocation and bound-slot invocation. Resolve inherited and overridden implementations per concrete root class. Reachability is structural may-reach, not probability or semantic necessity.",
+  "fail_closed": "Unknown on mutable selector, binding-slot writes outside constructor branches, method shadowing, decorators/descriptors, multiple inheritance, dynamic attribute access, receiver/bound-method escape, unsupported constructor or callable forms. Unknown evidence cannot authorize deletion.",
+  "evaluation": "Seal static facts for false, true and unknown contexts before joining the four old Paperless contract labels. Reuse known labels, not fresh generalization evidence; no additional program executions or re-labeling.",
+  "scoring": "New source-native dependency schema only. Do not manufacture old finite-fixture Boolean features or fit a model. All real scores still abstain and full effects remain unknown.",
+  "stop": "One restricted real-source binding extraction and boundary checks. No HTTP/ORM whole-program analysis, Saleor extension, new labels, probability fit, database or timing run.",
+  "production_authorized": false
+}

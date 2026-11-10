@@ -1,0 +1,49 @@
+{
+  "candidate_id": "alfio-ordered-reservation-batch-v1",
+  "status": "original_contract_characterized_candidate_not_admitted",
+  "evidence": "evidence/alfio-batch-contract/20261106-6b686908dc5e",
+  "scope": "unchanged original default method, unchanged recompiled default method offline, original method with pinned Spring/JDBC and full database schema; no optimized implementation",
+  "preparation": {
+    "must_complete_before_first_database_dispatch": true,
+    "retain_java_dependencies": ["ordered attendee supplier", "AttendeeData.empty", "AttendeeData.getFullName and CustomerName validation", "TicketMetadata and TicketMetadataContainer", "Json.toJson", "VatStatus.name"],
+    "observed_failures_before_all_writes": ["supplier exception", "two empty nonnull names", "null VAT on nonempty input", "metadata serialization failure"],
+    "empty_input": "no supplier/category/VAT evaluation; original method dispatches an empty batch; pinned Spring executes no SQL and returns zero",
+    "no_data_elision": "preserve contact values, complete metadata envelope, NULL versus empty, duplicate and null IDs; keep additional-field handling outside this region"
+  },
+  "positional_abi": [
+    {"position": 1, "name": "reservationId", "java_type": "String or null"},
+    {"position": 2, "name": "categoryId", "java_type": "Integer"},
+    {"position": 3, "name": "userLanguage", "java_type": "String or null"},
+    {"position": 4, "name": "srcPriceCts", "java_type": "Integer"},
+    {"position": 5, "name": "currencyCode", "java_type": "String or null"},
+    {"position": 6, "name": "ticketMetadata", "java_type": "String", "sql_cast": "jsonb"},
+    {"position": 7, "name": "vatStatus", "java_type": "String", "sql_cast": "VAT_STATUS"},
+    {"position": 8, "name": "firstName", "java_type": "String or null"},
+    {"position": 9, "name": "lastName", "java_type": "String or null"},
+    {"position": 10, "name": "email", "java_type": "String or null"},
+    {"position": 11, "name": "fullName", "java_type": "String or null"},
+    {"position": 12, "name": "id", "java_type": "Integer or null"}
+  ],
+  "binding_evidence": "database/database-cases.json records actual JDBC setters; nonnull strings use setString, Integer uses setObject, observed nulls use setNull with Types.NULL; these are observations of pinned dependencies, not universal driver rules",
+  "result_contract": {
+    "success": "sum the original int update-count vector in Java long and narrow to Java int",
+    "duplicate_ids": "preserve encounter order and multiplicity; observed counts [1,1,1] with last update winning",
+    "missing_id": "observed counts [1,0,1], aggregate 2",
+    "rls_denied": "observed counts [0,0], aggregate 0; retain manager count validation outside region",
+    "special_counts": "SUCCESS_NO_INFO and integer overflow characterized with synthetic template returns only, not observed as successful driver responses",
+    "failure_counts": "pinned driver returned BatchUpdateException counts [-3,-3] on tested failures; original method throws and does not fold those counts"
+  },
+  "effect_contract": {
+    "order": "same per-row UPDATE order, including constraint and trigger effects and failure prefix",
+    "permission": "same connection and transaction, invoker privileges, checkRowAccess and currentUserOrgs context, enabled and forced ticket RLS; no SECURITY DEFINER",
+    "observed_errors": {"22001": "DataIntegrityViolationException for overlength second-row email", "23503": "DataIntegrityViolationException for nonexistent reservation foreign key"},
+    "transaction_on_sql_error": "observed subsequent query fails with 25P02 until outer rollback; repository does not own rollback",
+    "rollback": "all 63 public table contents and 36 public sequence states equal the initial state after every harness rollback",
+    "counterexample": "synthetic AFTER UPDATE trigger advances a temporary sequence on row one before row-two 22001 failure; this sequence increment survives rollback. Equal final business rows do not prove equal effects. No claim this synthetic trigger exists in alf.io production."
+  },
+  "admission": {
+    "implemented": false,
+    "remaining": ["candidate parameter transport and same-connection invoker execution", "candidate versus original exception translation and failure-prefix effects", "eligibility decided before any candidate write; unknown stays on original path", "candidate full end-to-end comparison with original service context"],
+    "not_covered": ["concurrent transactions", "deadlock and cancellation", "every trigger or extension configuration", "all driver/server versions", "performance"]
+  }
+}

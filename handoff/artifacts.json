@@ -1,0 +1,57 @@
+{
+  "schema": "reversedb-handoff-inputs/v1",
+  "date": "2026-11-10",
+  "scope": "Source identities, download references and fixture entry points; not a complete portable environment lock. Existing runners also depend on historical evidence.",
+  "projects": [
+    {
+      "id": "java-tpcc",
+      "repository": "https://github.com/cmu-db/benchbase.git",
+      "commit": "33c00473807ebd49304d114a6d769d2d2b2bbb34",
+      "destination": "work/tpcc/source",
+      "fixture_entry": "scripts/tpcc_baseline.py"
+    },
+    {
+      "id": "alfio",
+      "repository": "https://github.com/alfio-event/alf.io.git",
+      "commit": "d44407944e5875bfaa3dd0cff6f4e42214f34931",
+      "destination": "work/alfio/source-d44407944e58",
+      "fixture_entry": "scripts/alfio_baseline.py"
+    },
+    {
+      "id": "oscar",
+      "repository": "https://github.com/django-oscar/django-oscar.git",
+      "commit": "a5ed3c9c17d4cf6ee18aa9795b493172416ab68b",
+      "destination": "work/oscar/source-a5ed3c9c",
+      "fixture_entry": "scripts/oscar_baseline.py"
+    },
+    {
+      "id": "beets",
+      "repository": "https://github.com/beetbox/beets.git",
+      "commit": "e978874d198311c51e54beb7f3df060035a10153",
+      "destination": "work/beets/source-e978874d",
+      "fixture_entry": "scripts/test_beets_feasibility.py"
+    },
+    {
+      "id": "fossil",
+      "repository": "https://github.com/drhsqlite/fossil-mirror.git",
+      "commit": "1573b8e66e402f7d3f5cf70d37036a4ba2966edd",
+      "destination": "work/fossil/source-1573b8e6",
+      "fixture_entry": "scripts/test_fossil_feasibility.py"
+    }
+  ],
+  "release_artifacts": {
+    "alfio": {
+      "url": "https://github.com/alfio-event/alf.io/releases/download/2.0-M5-2609/alfio-2.0-M5-2609-boot.jar",
+      "asset_id": 572032893,
+      "bytes": 83405439,
+      "sha256": "c769aa49fbd25ce8c348d78e4946b759dfa318bb7bffc0521378b78189176f39",
+      "hash_origin": "GitHub release asset digest, verified against local file"
+    }
+  },
+  "external_evidence": {
+    "status": "not_hosted",
+    "url": null,
+    "sha256": null,
+    "instructions": "Supervisor must host a reviewed archive outside GitHub or student must regenerate and rebind a new server context. See guide.md."
+  }
+}

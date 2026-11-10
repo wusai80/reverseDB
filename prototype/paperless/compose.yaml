@@ -1,0 +1,64 @@
+# Invoke through scripts/paperless_baseline.py; each run has a new project name.
+services:
+  db:
+    image: ${RDB_POSTGRES_IMAGE:?lock images first}
+    pull_policy: never
+    environment:
+      POSTGRES_DB: reversedb
+      POSTGRES_USER: reversedb
+      POSTGRES_PASSWORD: synthetic-only-reversedb
+    volumes:
+      - postgres:/var/lib/postgresql
+    healthcheck:
+      test: [CMD-SHELL, 'pg_isready -U reversedb -d reversedb']
+      interval: 2s
+      timeout: 5s
+      retries: 30
+  broker:
+    image: ${RDB_BROKER_IMAGE:?lock images first}
+    pull_policy: never
+    command: [valkey-server, --save, '', --appendonly, 'no']
+    healthcheck:
+      test: [CMD, valkey-cli, ping]
+      interval: 2s
+      timeout: 5s
+      retries: 30
+  app:
+    image: ${RDB_APP_IMAGE:?build baseline first}
+    pull_policy: never
+    depends_on:
+      db:
+        condition: service_healthy
+      broker:
+        condition: service_healthy
+    environment:
+      PAPERLESS_CONFIGURATION_PATH: /dev/null
+      PAPERLESS_SECRET_KEY: synthetic-only-reversedb
+      PAPERLESS_DBENGINE: postgresql
+      PAPERLESS_DBHOST: db
+      PAPERLESS_DBPORT: '5432'
+      PAPERLESS_DBNAME: reversedb
+      PAPERLESS_DBUSER: reversedb
+      PAPERLESS_DBPASS: synthetic-only-reversedb
+      PAPERLESS_REDIS: redis://broker:6379/0
+      PAPERLESS_DATA_DIR: /state/data
+      PAPERLESS_MEDIA_ROOT: /state/media
+      PAPERLESS_CONSUMPTION_DIR: /state/consume
+      PAPERLESS_SCRATCH_DIR: /state/scratch
+      PAPERLESS_LOGGING_DIR: /state/data/log
+      PAPERLESS_DISABLE_DBHANDLER: 'true'
+      PAPERLESS_CACHE_BACKEND: django.core.cache.backends.locmem.LocMemCache
+      PAPERLESS_CHANNELS_BACKEND: channels.layers.InMemoryChannelLayer
+      PAPERLESS_DB_READ_CACHE_ENABLED: 'false'
+      PYTHONPATH: /app/src:/harness
+      REVERSEDB_RESULTS: /results
+    volumes:
+      - results:/results
+    tmpfs:
+      - /state
+networks:
+  default:
+    internal: true
+volumes:
+  postgres:
+  results:

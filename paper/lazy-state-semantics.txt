@@ -1,0 +1,179 @@
+ReverseDB: effect-preserving lazy state, development extension v1
+2026-11-10
+
+THE OBSTACLE AND THE MINIMUM EXTENSION
+
+The existing beets path cannot be modeled as an immutable packet alone. Its
+constructor invokes update({}), which still evaluates an attribute predicate.
+That attribute demand can perform lazy conversion. Later demands must reuse
+the successful conversion, including the same returned object instance. If
+conversion fails, it must not install a successful cache entry. Resource truth
+testing and revision lookup follow initialization in a particular order.
+
+The November 9 scalar IR has neither mutable private memo state nor arbitrary
+effectful conversion. Declaring a constructor pure or pretending conversion is
+an i64 constant would lose precisely the behavior that matters here. The
+minimum component extension is therefore an explicit lazy-demand transition:
+retain raw values, a private success cache, and the original converter call.
+Remove the wrapper representation, not its conversion or state obligations.
+
+This file specifies and tests that component. It does NOT expand the frozen
+scalar IR/checker implicitly or make the existing whole-application adapter
+automatically admissible. The implementation is prototype/lazy_state/.
+
+STATE AND OBSERVATIONS
+
+A lazy state L = (R,C,f) contains:
+  R: the complete raw dictionary;
+  C: a private dictionary of successfully converted values;
+  f: the original converter, taking (key, raw value).
+
+Keys are exact builtin strings and R/C are exact builtin dictionaries. Values
+may be non-scalar objects. Successful f results are stored and returned by
+reference: equal-but-distinct copies are not substituted. A returned None is
+a successful result and is cached; an absent raw key also returns None but is
+not cached. Those two states must remain distinct.
+
+The converter is an opaque effectful transition on external state E:
+  f(k,r,E) -> Success(v,E',trace)
+          | Exception(e,E',trace).
+No purity flag or sampled success permits deleting, hoisting, reordering, or
+speculatively evaluating this transition. It can mutate declared external
+state or fail. It must not inspect the removed wrapper, private cache, call
+frames, allocator/refcount history, or reach those through aliases. Stable
+dispatch and the private-state ownership premise are explicit conditions;
+the prototype does not establish arbitrary Python nonescape automatically.
+
+Observe return values, alias relationships among returned object references,
+exception type/message, ordered external events and state, and the complete
+raw/memo states used in the component validation. Exception traceback frames,
+wrapper identity, allocation failure and allocator-dependent observations are
+outside this domain. External effects before an exception remain observable.
+
+DEMAND RULES
+
+Hit: k in dom(C).
+  demand(k,R,C,f,E) -> Success(C[k],R,C,E,empty-trace).
+
+Absent: k not in dom(C) and k not in dom(R).
+  demand(k,R,C,f,E) -> Success(None,R,C,E,empty-trace).
+  In particular, do not insert a cache entry for an absent key.
+
+First successful demand: k not in dom(C), k in dom(R), and
+  f(k,R[k],E) -> Success(v,E',t).
+Then:
+  demand(k,R,C,f,E) -> Success(v,R,C[k:=v],E',t).
+
+Failed demand: k not in dom(C), k in dom(R), and
+  f(k,R[k],E) -> Exception(e,E',t).
+Then:
+  demand(k,R,C,f,E) -> Exception(e,R,C,E',t).
+The cache does not change. If a caller catches the error and demands k again,
+f runs again. Earlier successful entries remain; conversion failure does not
+roll back the whole memo dictionary. Database transaction semantics remain the
+original caller's responsibility and are not redefined by this component.
+
+REPRESENTATION REFINEMENT ARGUMENT
+
+Relate an original lazy-map object o to explicit state (R,C,f) when its raw,
+cache and converter slots refer to those corresponding values, its source-bound
+lookup follows the supported protocol, and wrapper identity cannot escape.
+
+For a cache hit, both read the same cache entry without calling f. For absence,
+both return None with unchanged state. For a raw hit, both fetch the same raw
+value and call the same f once at the same position. On success both cache the
+same result reference before returning it. On failure neither reaches the cache
+assignment, and both expose the same failure and effect prefix. Thus each case
+preserves the relation, observations and converted-value alias relationships.
+Induction over any finite demand sequence gives component equivalence, including
+sequences that continue after a caught conversion error.
+
+This is a conditional handwritten simulation argument, not a machine-checked
+proof. The complete application needs a separate composition argument for
+initialization, getter dispatch, resources, field defaults and receiver escape.
+
+SOURCE BINDING, WITHOUT APPLICATION-NAME RULES
+
+The binder reads the resolved __getitem__ and __missing__ source. It recognizes
+cache hit followed by resolved missing lookup, then guarded raw lookup,
+conversion, successful cache insertion and return. Slot, receiver, key and
+temporary names are recovered and normalized from the AST. The same binder
+handles beets LazyDict and an independently renamed development implementation.
+
+Extra effects, insertion before conversion, dynamic attribute access, descriptor
+slots, nonordinary methods and unsupported dispatch are refused. The generated
+demand function uses raw/cache/converter parameters and introduces no LazyDict.
+Compilation re-extracts the binding rather than trusting supplied slot names;
+tests reject a forged binding and a changed lookup method. Exact source files,
+method locations and digests are retained. Loaded code correspondence and
+stable dispatch remain runtime premises, not inferred from hashes alone.
+
+This is a bounded source-language rule with explicit semantic obligations, not
+a probabilistic deletion decision. A future ranking model may prioritize a
+region but cannot certify private state or erase a converter's effects.
+
+EXISTING BEETS DEVELOPMENT INTEGRATION
+
+The scoped adapter reuses the already source-derived update({}) prefix and
+clear_dirty operation. Getter-registry lookup remains at every demand, even
+cache hits. Prefix evaluation, resource truth testing/revision access, and
+consumer demands retain their original order. Class conversion and missing-field
+defaults use the original implementations. Known computed/non-native consumer
+demands are refused before prefix execution; unexpected receiver-dependent
+dispatch encountered during execution stops without retrying the original
+after partial effects. Such rejection is not claimed to preserve arbitrary
+out-of-domain application execution.
+
+Full fixed/flexible query packets and the original Results indexing logic
+remain. The candidate constructs neither Item nor LazyDict; it retains all
+raw fields and explicit memo state. The flexible state is retained even when
+the selected consumer only demands fixed fields. No SQL projection, row/field
+pruning, query deletion, index change or transaction weakening is introduced.
+
+This adapter is manually composed development integration. The source-bound
+lazy component is reusable; automatic recovery/admission of the entire Item
+constructor and its receiver-dependent field access is still incomplete.
+In particular, removal of the entire constructor has not been newly proved by
+proving only the lazy-demand transition.
+
+FIXED VALIDATION AND NEGATIVE CONTROLS
+
+Final evidence: evidence/lazy-state/20261110-v2/.
+
+Component comparison uses actual beets LazyDict plus the renamed implementation,
+four raw-key presence patterns, all demand sequences of length 0 through 4 over
+two present-or-absent keys and one always-absent key, and five converter modes:
+normal, successful None, mutable-object result, failure on first attempt, and
+failure on every attempt. This yields 4,840 original/replacement pairs. It
+compares outcomes, events, raw/cache state after every demand and alias relations
+among returned mutable objects. The original class methods execute as the oracle.
+
+Three deliberately wrong candidates yield retained counterexamples:
+  - no memoization repeats effects and returns fresh equal objects;
+  - caching failure changes retry/error behavior;
+  - treating cached None as a miss repeats successful conversion.
+Three unsupported source structures are refused. Forged binding and changed
+dispatch checks also pass. These are bounded diagnostic checks, not proof of
+arbitrary Python receiver behavior.
+
+Existing application integration compares all 100 rows of the prior development
+fixture, with repeated target demand, 18 conversion/empty-row cases, and 12
+ordered initialization/resource/conversion scenarios. All match. The five full
+database tables and schema remain unchanged; the baseline database bytes remain
+unchanged. Runtime constructor sentinels establish that the candidate invokes
+neither Item.__init__ nor LazyDict.__init__. These are semantic checks, not
+timing evidence or a full export benchmark. Input source snapshots, generated
+code, plans, traces, database snapshots and manifests are retained.
+
+Run from the repository root with the existing environment:
+  PYTHONHASHSEED=20261109 work/beets/venv/bin/python -m prototype.lazy_state.verify --out NEW_DIRECTORY
+
+WHAT THIS STEP RESOLVES
+
+We now have a concrete stateful component needed by an existing application,
+with a source-derived applicability check, a reusable refinement rule, an
+executable replacement and observed counterexamples to weaker rules. This
+advances beyond more scalar toy programs. The open G1 obligation is composition:
+integrate this private-state/effect transition with the checked source/IR path
+and justify the constructor/field-access boundary. G2/G3, held-out transfer and
+new performance evaluation remain pending. No old frozen method files changed.

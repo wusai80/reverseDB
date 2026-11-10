@@ -1,0 +1,15 @@
+{
+  "version": "finite-effects/v1",
+  "source_dataset": "evidence/module-calibration/20261104-00de1b003405/dataset.json",
+  "feature_sets": {
+    "old_two": ["discarded_result", "limited_probe_pass"],
+    "effect_presence": ["discarded_result", "limited_probe_pass", "module_may_write", "module_may_raise"],
+    "effect_context": ["discarded_result", "limited_probe_pass", "module_may_write", "module_may_raise", "observable_write", "alias_write_to_observation", "neutral_update_only", "retained_similar_action"]
+  },
+  "fit": "unchanged family-weighted joint-cell calibrator, alpha=beta=1",
+  "split": "same six leave-mechanism-out folds; dataset and labels frozen",
+  "stage": "development-set feature study; previous results and labels have been seen during feature design",
+  "extraction": "AST specialization by explicit program configuration and singleton input-domain facts only; never reads labels or original/deleted outcome comparisons",
+  "stop": "one run of three predefined feature sets; no feature selection or parameter tuning after results",
+  "deployment": "finite Python fixtures only; real Java/JDBC model unchanged"
+}

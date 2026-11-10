@@ -1,0 +1,12 @@
+{
+  "version": "relative-binding-risk-development/v1",
+  "baseline_archive": "evidence/candidate-risk-pilot/20261106-3cf76f4405df",
+  "facts_archive": "evidence/jdbc-boundary-contracts/20261105-149567965337",
+  "features": ["jdbc_binding_calls", "mapped_value_depth_delta"],
+  "change": "Replace absolute binding-argument toString count with candidate minus original expression depth at the previously mapped time binding. Keep bind count, labels, splits, weights, fitting settings unchanged. Setter signature change is recorded but not fitted, to avoid double-counting the same edit.",
+  "correspondence": {"NewOrder": {"reference_method": "#insertOpenOrder(", "reference_slot": 5, "candidate_method": "FusedNewOrder#execute(", "candidate_slot": 5}, "Payment": {"reference_method": "#insertHistory(", "reference_slot": 6, "candidate_method": "SegmentedPayment#execute(", "candidate_slot": 10}},
+  "premise": "Reuse declared original-runtime clock substitution and explicit boundary correspondence from the existing AST experiment. Normalize wall_clock to the same command clock AST. Do not use repaired candidates as references. This is one selected binding per helper, not complete feature coverage.",
+  "comparison": "Same four retrospective candidates and two region-held-out folds. Primary project-held-out validation remains unavailable. Features selected after seeing the defect and previous scores: development only, not independent calibration.",
+  "controls": ["same transformation/operator renaming leaves depth delta unchanged", "held-out labels do not affect training", "reversing training labels reverses learned ranking", "one retained JSON serialization in repaired NewOrder is not counted as time-boundary drift", "same Java binding cannot distinguish full and early_write SQL modes; keep the existing order counterexample as an out-of-scope limitation"],
+  "stop": "One representation comparison, no threshold/regularization search or new DB executions; never turn a low score into deletion permission. Do not combine the out-of-protocol early-write witness with main metrics."
+}

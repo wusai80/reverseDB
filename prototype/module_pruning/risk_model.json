@@ -1,0 +1,28 @@
+{
+  "version": "module-necessity-bayes/v0",
+  "calibration": "untrained expert assumptions; sensitivity envelope is NOT a credible or confidence interval",
+  "hypothesis": "Removing this module violates at least one retained capability under the specified contract; not workload hit frequency",
+  "fusion_assumption": "One joint Bayes factor per declared evidence group; factors across groups are assumed conditionally independent given necessity. This assumption is not established by current data.",
+  "prior_grid": [0.25, 0.5, 0.75],
+  "groups": {
+    "static_result_use": {
+      "bayes_factor_grid": [0.25, 0.5, 1.0],
+      "meaning": "P(discarded result and bounded consumer evidence | necessary) / P(evidence | unnecessary); manual assumption, not a learned likelihood"
+    },
+    "differential_campaign": {
+      "bayes_factor_grid": [0.5, 0.8, 1.0],
+      "meaning": "Joint contribution of the entire original comparison campaign, including repeated timing calls; not one update per passing test"
+    }
+  },
+  "utility": {
+    "unit": "illustrative millisecond-equivalent utility per workflow; correctness loss is a policy weight, not measured latency",
+    "loss_if_wrong": 10.0,
+    "risk_aversion": 1.0
+  },
+  "validation_budget": 3.0,
+  "probes": [
+    {"id":"external_effect_audit", "cost":3.0, "sensitivity_grid":[0.3,0.6,0.8], "false_positive":0.0, "status":"hypothetical diagnostic performance; not calibrated or executed"},
+    {"id":"independent_state_family", "cost":2.0, "sensitivity_grid":[0.1,0.25,0.4], "false_positive":0.0, "status":"hypothetical diagnostic performance; not calibrated or executed"},
+    {"id":"repeat_existing_inputs", "cost":1.0, "sensitivity_grid":[0.0,0.0,0.0], "false_positive":0.0, "status":"same deterministic observations add no new evidence"}
+  ]
+}

@@ -1,0 +1,41 @@
+{
+  "version": 1,
+  "scope": "Two explicitly declared base-order page consumers in one read-only fixed-snapshot workflow; no cross-request cache or new index selection",
+  "targets": 1000,
+  "effective_links_per_target": 20,
+  "page_sizes": [10, 100],
+  "overlap_percentages": [0, 50, 100],
+  "calibration_seeds": [42],
+  "evaluation_seeds": [43, 44],
+  "direct_arms": ["independent_correlated", "independent_grouped", "db_shared", "app_shared"],
+  "evaluation_arms": ["independent_correlated", "independent_grouped", "db_shared", "app_shared", "selector"],
+  "cache_owned_budget_bytes": 4096,
+  "warmups_per_arm": 2,
+  "blocks": 5,
+  "arm_order_seed": 20261104,
+  "expected_calibration_samples": 120,
+  "expected_evaluation_samples": 300,
+  "selector": {
+    "features": ["jdbc_calls", "postgres_total_cost", "estimated_output_bytes", "cache_owned_bytes"],
+    "fit": "nonnegative least squares, no intercept; enumerate all 16 active feature subsets; training labels are five-call median milliseconds for calibration seed only",
+    "normalization": "per-feature maximum in calibration data",
+    "tie_break": "fixed direct_arms order",
+    "online": "check eligibility and budget, collect EXPLAIN FORMAT JSON estimates for all eligible alternatives, score frozen model, execute one plan",
+    "calibration_policy": "model is frozen before reading evaluation measurements; no tuning or refitting from evaluation results",
+    "scope_limit": "selection among manually specified templates, not automatic source recovery or generalization to unseen workload shapes"
+  },
+  "memory": {
+    "budgeted": "shallow size of cache control object plus its primitive long[]; measured with Java Instrumentation; no other objects owned by cache",
+    "capacity": "at most pageA.limit + pageB.limit entries; two longs per entry (key,count)",
+    "excluded": "caller-owned flow token, request/output objects, JDBC buffers, total process heap/RSS, database work_mem",
+    "lifetime": "one workflow invocation, cleared and detached in finally; same-snapshot transaction may outlive it",
+    "insufficient_budget": "fallback before allocation/business execution; never truncate required outputs"
+  },
+  "timing": {
+    "includes": ["input/consumer/context guards", "SQL construction and all business calls", "shared result build/read/clear", "both complete typed ordered results and serialization", "online EXPLAIN and model scoring for selector"],
+    "excludes": ["connection and transaction setup/commit", "fixture/oracle/schema validation", "offline calibration and fitting, reported separately", "production source analysis/live ORM binding, which are not implemented"]
+  },
+  "semantic_cases": "three fixtures times four page pairs; plus context mismatch, below/exact budget, closed/cross-flow cache, across-flow permission change and insufficient shared-domain mutant",
+  "fairness": "All plans know both consumers in advance and use the same indexes, snapshot, data and client-cache budget; database sharing is an explicit strong baseline; repeated timings start with no retained application cache",
+  "stop": "One calibration/evaluation sequence; preserve failures; no result-driven extra cases, indexes, parameter tuning, or additional consumers"
+}

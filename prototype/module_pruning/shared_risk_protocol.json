@@ -1,0 +1,20 @@
+{
+  "version": "shared-evidence-risk/v1",
+  "source_archive": "evidence/module-control-scoring/20261104-32e4999fd4d5",
+  "feature_arms": ["old_eight", "with_control"],
+  "model": "Fixed-intercept, family-weighted ridge logistic additive score; no interactions or feature selection",
+  "formula": "q(x)=sigmoid(logit(p_train)+sum_j beta_j*(x_j-mu_train_j)); mu and p_train use training groups only",
+  "objective": "sum_i w_i*logloss(y_i,q_i) + lambda/2*sum_j beta_j^2; each training mechanism group has total weight one",
+  "intercept": "Fixed to the unchanged Beta(1,1)-smoothed training-group prior; not optimized, so an empty/no-signal feature model exactly recovers the prior",
+  "lambda": 1.0,
+  "parameter_rationale": "One predeclared regularization strength on unscaled Boolean effects; not selected using these development results. Sensitivity and calibration remain untested.",
+  "constant_features": "Drop training-constant columns, coefficient zero. Record test values not seen in training; these cannot supply learned evidence.",
+  "optimizer": {"method": "deterministic damped Newton", "max_iterations": 50, "gradient_tolerance": 1e-10, "max_backtracks": 25, "armijo": 0.0001},
+  "split": "Reuse exactly the prior common cohort, source mechanism groups and per-fold train/test IDs. Two feature arms, three grouped folds, six additive fits. No in-sample deployment model.",
+  "admission": "Reuse complete-eleven-feature gate for both arms; unknowns abstain without filling values. Real Java/JDBC remains outside domain. Training-unseen Boolean values are separately disclosed in development diagnostics.",
+  "baselines": "Reuse verified prior joint-cell old-eight/new-eleven forecasts, training prior and constant 0.5; do not refit or retune the baselines",
+  "metrics": ["same-cohort macro Brier and log loss", "per-group losses", "diagnostic false removal/retention at unchanged 0.5 cutoff", "deviation from training prior", "training-constant feature novelty", "coefficients and per-prediction contributions"],
+  "interpretation": "Known seven-case development subset, one authored source group; feature design and earlier results already seen. Learning shared weights does not prove causal necessity or calibrated real-world risk.",
+  "stop": "One fixed additive-model comparison. No lambda sweep, interaction additions, threshold changes, added cases or alternate model after seeing results. Preserve failure or non-improvement.",
+  "production_authorized": false
+}

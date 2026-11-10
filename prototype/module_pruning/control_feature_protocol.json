@@ -1,0 +1,14 @@
+{
+  "version": "finite-control-dependencies/v1",
+  "source_archive": "evidence/module-external/20261104-0a3d0ae02836",
+  "new_features": ["module_controls_observation", "module_may_return", "retained_action_same_guard_context"],
+  "definition": "A module-to-return/raise dependency path containing at least one control edge; direct module return; same action with syntactically equal lexical guards and identical reaching definitions for guard inputs. These are structural may-evidence, never necessity or replacement proofs.",
+  "analysis": "Structured branch traversal and scalar reaching definitions; assignment kills, branch joins union, branch-local environments isolated, surviving continuation retains early-exit control. Treat the deletion marker as original-region membership, not a business predicate.",
+  "scope": "execute(x,flag,removed), primitive integer/boolean inputs, one exact deletion marker and fixed Rejected wrapper. No loop, arbitrary try, hidden expression control, input mutation, heap, implicit exception or external effect proof.",
+  "unknown_rule": "Unsupported structure => unknown. Partial graph => positive syntactic evidence may remain true; absent evidence is null rather than false. effect_summary_complete and deletion_authorized always false.",
+  "data_use": "Extract from frozen source and declared domains only; seal facts before joining old labels for reporting. Prior cases/results are already known: this is a development regression, not fresh validation.",
+  "score_use": "Enrich old feature records with three tri-state fields. Do not feed null into Boolean calibrator or change old probabilities. No refit, no new risk threshold or deployment promotion.",
+  "checks": "Semantic boundary unit tests plus one static pass over the 16 frozen challenge programs. Reuse archived exhaustive labels, do not regenerate or expand them.",
+  "stop": "One bounded control extension and fixed regression. Leave other effect gaps unresolved and documented; no database or performance experiment.",
+  "production_authorized": false
+}

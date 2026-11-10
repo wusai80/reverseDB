@@ -1,0 +1,25 @@
+{
+  "authority": "Manually reviewed native source binding; not automatic IR admission",
+  "timeline_sha256": "9b7080685883f3f33c949f91a538009bc5f66e240ddd7f3261f20dea99683b7d",
+  "sources": {
+    "work/fossil/build-original/bld/timeline_.c": "9b7080685883f3f33c949f91a538009bc5f66e240ddd7f3261f20dea99683b7d",
+    "work/fossil/build-original/bld/printf_.c": "4c27f7645a10ce2800955b28b670c9bc5628270a1a08f7b85a2788c9e71ad825",
+    "work/fossil/build-original/bld/blob_.c": "997eb846262bd29d151e3466a60972449239a43a643ad2222d6ed79d5e133b73",
+    "work/fossil/build-original/bld/util_.c": "e2a5974affaedac43ebc82b4730decdca4e3d41161566ceddc68c9e652a16fa5",
+    "work/fossil/build-original/bld/wikiformat_.c": "3fdf435bb2f34a12308435e20fd1d1b04704a577bad84db7df15ef8433ad13be",
+    "work/fossil/build-original/bld/db_.c": "9f5ac67bb2aed1c8baf4d3c694af3c9512a375b63209050d93f6577037963c3b",
+    "work/fossil/source-1573b8e6/src/config.h": "74bd9522496bc44733e6cb465470653ec9111cefa660bd5cfa88b2db8e758eca",
+    "work/fossil/build-original/autoconfig.h": "5726751b5643195839d816ca90f6e728ad8f6bdc05afc1d988737e15ae2da3ff",
+    "evidence/fossil-roundtrip/20261110-v1/db.o": "d08713a85dabe34a6a6076507e8467dbedfe5bc016b9f711be37662c2a0d0235",
+    "evidence/fossil-roundtrip/20261110-v1/recovered.o": "2c5c09a0031ad4cb47c53761f4e702898c608f02b3e97190fe772f5ad40039a3"
+  },
+  "premises": [
+    "Pinned Darwin arm64 LP64 native build and recovered db wrappers",
+    "Defined C execution; arguments valid stable NUL-terminated strings or NULL; no concurrency or allocator interposition",
+    "Allocation failure, allocation addresses/counts and execution timing are outside semantic observations",
+    "Guard requires each string shorter than 65536 bytes and format shorter than 1024 bytes; original formatter fallback otherwise",
+    "At most three plain %s/%S conversions: only external formatter effect is non-NULL %S hash_digits(0)",
+    "Private buffer has no alias; explicit-format branch never consumes it; fossil_free(NULL) is valid",
+    "All wiki/SQLite callbacks, query order, configuration effects and failure continuations retained"
+  ]
+}

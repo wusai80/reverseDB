@@ -1,0 +1,20 @@
+{
+  "version": "finite-module-calibration/v1",
+  "domain": "finite-module-suite/v1",
+  "scope": "Controlled finite programs only; not empirical calibration for Java/JDBC applications",
+  "families": ["returned_value", "persistent_state", "exception_control", "heap_alias", "authorization_guard", "resource_lifetime"],
+  "variants_per_family": 4,
+  "input_values": [-1, 0, 1],
+  "input_flags": [false, true],
+  "limited_probe": {"value": 0, "flag": true},
+  "features": ["discarded_result", "limited_probe_pass"],
+  "label": "1 iff at least one allowed state has different complete contractual observations after deletion; otherwise 0 by exhaustive comparison in this finite domain",
+  "split": "leave one entire mechanism family out; no random candidate split",
+  "fit": "joint Boolean feature cells with fixed Beta(1,1)-style smoothing of family-normalized counts; each training family has total weight one; unseen cells use smoothed training prevalence",
+  "alpha": 1.0,
+  "beta": 1.0,
+  "baselines": ["frozen_v0_soft_score", "training_prevalence"],
+  "reliability_bin_edges": [0.0, 0.2, 0.4, 0.6, 0.8, 1.0],
+  "selection": "Report Brier and log loss; no promotion unless both beat both baselines; real-domain deployment is excluded regardless",
+  "stop": "one fixed suite and grouped evaluation, no tuning after outcomes; preserve failures and old risk parameters"
+}

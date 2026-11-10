@@ -1,0 +1,65 @@
+% Generated from fresh five-subject replication; raw hashes in results.json.
+\newcommand{\PrimaryResults}{%
+\begin{tabular}{@{}lrrrr@{}}
+\toprule
+Workload & Original & Tested arm & Median ratio & Wins \\
+\midrule
+Java fusion & 86.818 & 48.153 & $1.803\times$ & 8/8 \\
+alf.io (A/A) & 103.358 & 100.620 & $1.027\times$ & 5/6 \\
+Oscar (experimental) & 98.652 & 94.334 & $1.046\times$ & 7/8 \\
+beets (experimental) & 4808.713 & 4369.033 & $1.101\times$ & 8/8 \\
+Fossil hash & 18.386 & 9.968 & $1.844\times$ & 12/12 \\
+Fossil branch & 11.690 & 9.568 & $1.222\times$ & 12/12 \\
+\bottomrule
+\end{tabular}
+}
+\newcommand{\JavaCompositionResults}{%
+\begin{tabular}{@{}lrrr@{}}
+\toprule
+Plan & Mixed ms & OrderStatus ms & JDBC calls \\
+\midrule
+Original & 86.818 & 1.658 & 267 \\
+Deletion only & 89.437 & 1.487 & 266 \\
+Fusion only & 48.153 & 1.841 & 89 \\
+Fusion + deletion & 46.932 & 1.476 & 88 \\
+\bottomrule
+\end{tabular}
+}
+\newcommand{\SelectionResults}{%
+\begin{tabular}{@{}llrr@{}}
+\toprule
+Context & Choice & Geometric ratio & Lower bound \\
+\midrule
+Java & Fusion & 1.811 & 1.769 \\
+alf.io & Original & --- & --- \\
+Oscar & Original & --- & --- \\
+beets & Original & --- & --- \\
+Fossil hash & Deletion & 1.861 & 1.831 \\
+Fossil branch & Deletion & 1.199 & 1.175 \\
+\bottomrule
+\end{tabular}
+}
+\newcommand{\JavaRegionResults}{%
+\begin{tabular}{@{}lrrr@{}}
+\toprule
+Plan & JDBC calls & Median ms & Paired ratio \\
+\midrule
+Original & 267 & 85.131 & --- \\
+NewOrder only & 94 & 47.116 & $1.793\times$ \\
+Payment only & 262 & 83.857 & $1.017\times$ \\
+Both & 89 & 46.340 & $1.847\times$ \\
+\bottomrule
+\end{tabular}
+}
+\newcommand{\ModuleResults}{%
+\begin{tabular}{@{}lrrrr@{}}
+\toprule
+Arm & Hash ms & Branch ms & Wiki calls & Private reads \\
+\midrule
+Original & 18.340 & 11.448 & 2000 & 2000 \\
+SQL-side only & 10.740 & 10.054 & 0 & 2000 \\
+C-side only & 17.009 & 11.427 & 2000 & 0 \\
+Both & 9.816 & 9.813 & 0 & 0 \\
+\bottomrule
+\end{tabular}
+}

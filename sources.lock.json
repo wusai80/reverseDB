@@ -1,0 +1,10 @@
+{
+  "schema_version": 1,
+  "selected_on": "2026-11-02",
+  "selection_policy": "Official default-branch snapshots resolved through GitHub API; immutable commits, not release or production recommendations.",
+  "repositories": [
+    {"name": "chatwoot", "url": "https://github.com/chatwoot/chatwoot.git", "ref_at_selection": "develop", "commit": "8304670cfd76e1d94ef04df89e40f62a080ffc2f", "commit_date": "2026-11-02T10:15:57Z"},
+    {"name": "paperless-ngx", "url": "https://github.com/paperless-ngx/paperless-ngx.git", "ref_at_selection": "dev", "commit": "1b8b861a6072fd85aad68847c0d312d7a9fd2ca0", "commit_date": "2026-11-02T03:51:52Z"},
+    {"name": "saleor", "url": "https://github.com/saleor/saleor.git", "ref_at_selection": "main", "commit": "0e3fa1b022558b33fb9ff5efdadebd3bbccdb83b", "commit_date": "2026-11-02T07:45:37Z"}
+  ]
+}

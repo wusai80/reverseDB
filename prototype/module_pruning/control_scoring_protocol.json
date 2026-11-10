@@ -1,0 +1,29 @@
+{
+  "version": "control-scoring-development/v1",
+  "source_archive": "evidence/module-control/20261104-951bae7ea42b",
+  "domain": "finite-control-scoring-development/v1",
+  "old_features": ["discarded_result", "limited_probe_pass", "module_may_write", "module_may_raise", "observable_write", "alias_write_to_observation", "neutral_update_only", "retained_similar_action"],
+  "control_features": ["module_controls_observation", "module_may_return", "retained_action_same_guard_context"],
+  "groups": {
+    "scalar_values": ["overwritten_receipt", "checksum_chain", "reset_after_assignment"],
+    "guard_conditions": ["opposite_guard", "redundant_guard"],
+    "control_transfer": ["early_return", "control_dependency"],
+    "heap_state": ["conditional_ledger", "preexisting_snapshot", "two_consumers", "integer_identity", "postmutation_copy"],
+    "unmodeled_effects": ["implicit_division_error", "loop_accumulator", "method_side_effect", "finally_cleanup"]
+  },
+  "source_groups": 1,
+  "grouping_basis": "Fixed source mechanism groups, not independent software origins. Hold entire groups out; no random row split or splitting opposite/redundant guards across train/test.",
+  "admission": "Both old-eight and new-eleven arms use exactly the same records whose eleven evidence fields are explicit booleans. null/missing evidence abstains; labels and previous diagnostic scores cannot affect admission.",
+  "fit": "Unchanged family-normalized joint-cell fit(), alpha=beta=1, unseen cell uses training-only prior. One old-eight versus new-eleven grouped ablation, no tuning.",
+  "alpha": 1.0,
+  "beta": 1.0,
+  "reliability_bin_edges": [0.0, 0.2, 0.4, 0.6, 0.8, 1.0],
+  "classification_cutoff": 0.5,
+  "classification_rule": "q < 0.5 is only a diagnostic removable nomination; equality retains. Never authorizes deletion.",
+  "baselines": ["constant 0.5", "training-only family-normalized prior"],
+  "metrics": ["common-cohort macro Brier/log loss", "unseen-cell fraction", "diagnostic false-removal and false-retention denominators", "coverage and excluded label composition", "mixed-label cells as descriptive representation diagnostic only"],
+  "interpretation": "All sources, labels and feature-design failures have already been seen. This is a small development ablation, not external calibration or independent generalization evidence. Only three mechanism groups have complete features.",
+  "deployment": "Every row retains operational abstention and deletion_authorized=false. New fitted models are per-fold experimental artifacts only, not a promoted full-data model. Java/JDBC remains outside domain.",
+  "stop": "One fixed grouped comparison. No new source cases, labels, feature changes, threshold changes, alternate classifier, database deletion or timing run after observing results.",
+  "production_authorized": false
+}

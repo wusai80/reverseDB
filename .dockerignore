@@ -1,0 +1,13 @@
+**
+!sources/
+!sources/paperless-ngx/
+!sources/paperless-ngx/pyproject.toml
+!sources/paperless-ngx/uv.lock
+!sources/paperless-ngx/README.md
+!sources/paperless-ngx/src/
+!sources/paperless-ngx/src/**
+!prototype/
+!prototype/paperless/
+!prototype/paperless/**
+**/__pycache__/
+**/*.pyc

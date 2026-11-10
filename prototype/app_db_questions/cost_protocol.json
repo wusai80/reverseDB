@@ -1,0 +1,36 @@
+{
+  "version": 1,
+  "frozen_before_measurement": true,
+  "scope": "P1 map relationalization and P2 single-producer page demand; hand-coded JDBC fixture, not production binding",
+  "arms": ["original", "p1", "p2", "both", "manual_grouped_join", "manual_correlated_subquery"],
+  "target_counts": [100, 1000],
+  "effective_links_per_target": [1, 20],
+  "page_percentages": [1, 100],
+  "offset": 0,
+  "data_seeds": [42, 43, 44],
+  "arm_order_seed": 20261104,
+  "warmups_per_arm": 2,
+  "blocks": 5,
+  "calls_per_arm_per_block": 1,
+  "expected_timed_samples": 720,
+  "expected_diagnostic_calls": 144,
+  "jdbc_prepare_threshold": 0,
+  "isolation": "SERIALIZABLE read-only; common snapshot across arms in a case; no writers between timing and diagnostics",
+  "timing_includes": ["fixed fixture input/consumer checks", "SQL construction and parameter binding", "all business SQL and transport", "map/CASE or relation computation", "complete typed row consumption and JSON rendering"],
+  "timing_excludes": ["connection and transaction setup/commit", "fixture and schema validation", "source analysis and production live binding, which are not implemented here", "test oracle/digest comparison", "EXPLAIN and memory/network diagnostics"],
+  "diagnostics": {
+    "transport": "actual PostgreSQL stream bytes in both directions, through counting TCP proxy only in separate untimed pass; excludes connection setup and TLS; admin HTTP is a different socket",
+    "memory": "JVM heap-pool peak sum after reset, heap before/after and peak-minus-before upper bound; not process RSS or a simultaneous heap high-water mark",
+    "plans": "EXPLAIN (ANALYZE, BUFFERS, FORMAT JSON) for actual captured SQL/parameters; separate from timing and network measurements",
+    "logical_input": "effective association rows for full target domain and demanded page"
+  },
+  "shared_indexes": ["targets(tenant,visible,row_id) INCLUDE(k,label)", "links(tenant,k,doc) INCLUDE(deleted)", "allowed(tenant,doc)"],
+  "data": {
+    "effective_link_rows": "exact requested rows per visible target; duplicate document references allowed",
+    "noise": "per target: one unauthorized link, one deleted link, one other-tenant link",
+    "targets": "unique ordered row_id and key; nullable labels; insertion order randomized by seed",
+    "prior_semantic_scope": "duplicate target occurrences, empty cases and consumer rejection covered by archived smoke tests"
+  },
+  "stop": "One fixed run; no new scales, indexes or parameter tuning based on results. Preserve failed attempts if operational fixes are required.",
+  "interpretation": "Single local process/container, warm timing blocks, three data seeds; not independent deployment replications or a production speedup claim"
+}

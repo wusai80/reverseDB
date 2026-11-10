@@ -1,0 +1,19 @@
+{
+  "version": "candidate-risk-four-bridge-development/v1",
+  "source_archive": "evidence/timestamp-abi/20261105-f803874e717c",
+  "candidates": ["new-old", "new-fixed", "payment-old", "payment-fixed"],
+  "features": ["jdbc_binding_calls", "binding_argument_toString_calls"],
+  "feature_scope": "Lexical counts in the four frozen generated helpers, excluding comments/string literals. Only arguments of setX calls on locally declared PreparedStatement names. Not a semantic analyzer or general Java parser.",
+  "target": "At least one observed response, SQL outcome or complete nine-table state difference in the archived ordinary/extreme-clock helper protocol; y=0 means no difference found in that protocol only.",
+  "sampling": "Retrospective diagnostic cases selected around a known defect. No population risk interpretation.",
+  "model": "Ridge logistic regression; fixed training-only smoothed-prior intercept; training-only centered numeric counts; no scaling, interactions or manual coefficient directions; reuse shared_risk numerical primitives.",
+  "lambda": 1.0,
+  "optimizer": {"max_iterations": 50, "gradient_tolerance": 1e-10, "max_backtracks": 25, "armijo": 0.0001},
+  "weights": "Each training region has total weight one; each candidate within it equal weight. GC/BC and clock cases do not create extra candidates.",
+  "baseline": "Training-only Beta(1,1)-smoothed weighted prior, with the identical candidate weights.",
+  "primary_evaluation": "Source-held-out evaluation unavailable: all four candidates are tpcc-app. Do not relax the inventory source split or claim external validation.",
+  "secondary_evaluation": "Explicit retrospective development diagnostic only: hold out NewOrder, then Payment; keep historical/fixed variants together. Same defect repair is shared across regions and is a contamination limitation.",
+  "metrics": ["mean Brier", "mean log loss", "within-held-out-region pair ranking", "training-constant features and unseen test values"],
+  "stop": "Exactly two fits with these features/settings. No parameter or feature search after seeing results; no new DB executions, performance measurements or deletion decisions. Do not promote a final model.",
+  "limitations": "Features and sample choice follow known defect evidence; four candidates, two regions, one project, one repair mechanism. Scores are uncalibrated development outputs, not safe-deletion probabilities. Binding text conversion can be necessary (e.g. JSON); learned association is not a deletion rule. No generic DAG features are extracted in this pilot."
+}

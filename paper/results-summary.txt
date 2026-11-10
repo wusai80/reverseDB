@@ -1,0 +1,63 @@
+Five-project fresh evaluation and module analysis — 2026-11-10
+
+All five principal existing development projects were run sequentially with
+fixed original protocols, full data and unchanged semantic engines/policy.
+No performance-driven reruns or extra samples. Old batches remain separate.
+
+Subject / tested path       Original -> tested ms      Median ratio  Wins
+Java fusion                 86.818 -> 48.153           1.803x        8/8
+alf.io original A/A        103.358 -> 100.620           1.027x        5/6
+Oscar experimental adapter  98.652 -> 94.334           1.046x        7/8
+beets experimental export 4808.713 -> 4369.033          1.101x        8/8
+Fossil hash                 18.386 -> 9.968            1.844x        12/12
+Fossil branch               11.690 -> 9.568            1.222x        12/12
+
+These are ratios of arm medians within distinct timing boundaries, not pooled
+cross-project speedups. Fossil contributes two workloads of one project.
+alf.io runs identical original code in both arms: its apparent difference is
+execution/measurement variation and cannot be attributed to optimization.
+
+Framework outcomes: Java fusion; Fossil deletion; original for alf.io, Oscar,
+and beets. A generic source-description adapter replays the existing beets
+admission checks. No project-specific rule was added to the framework core.
+Experimental gains in Oscar/beets do not override unresolved semantic/backend
+obligations. Oscar's fresh paired interval is [1.0358,1.0977]; its earlier batch
+had [0.9063,1.0844]. Both are retained; do not call it an intrinsic failure or
+claim an automatically admitted speedup. Beets fresh paired interval is
+[1.0899,1.1217], still under its explicit successful-read deployment contract.
+
+Java deletion alone removes one query but is 3.02% slower in mixed median here.
+Fusion+deletion has a 2.53% lower median than fusion alone, with 5/8 wins. Its
+geometric incremental ratio 1.017 has lower bound 0.979, below the unchanged
+1.02 criterion. The selector therefore keeps fusion alone.
+
+Individual module study: Fossil, fixed four-arm factorial
+Arm                     Hash ms   Branch ms   Wiki calls  Private-status reads
+Original                18.340    11.448      2000        2000
+SQL-side removal only   10.740    10.054         0        2000
+C-side removal only     17.009    11.427      2000           0
+Both                     9.816     9.813         0           0
+
+Counts are separate untimed diagnostics on the full 2,000-row hash request.
+Timing uses eight Williams blocks per request with two warmup blocks. Baseline
+is original timeline source linked with the recovered DB wrappers common to
+all arms; it is separately checked against the official binary. Combined source
+is byte-identical to the previously validated slice. SQL-side removal supplies
+most benefit. C-side removal helps hash output but not clearly the branch mix.
+Neither paired interaction interval supports positive synergy. Protected query
+errors and non-hash fallback failures remain; presentation-only exclusions are
+explicit and unchanged. All 306 normal candidate/reference comparisons and
+full-state checks pass across 508 executions. No cell was excluded.
+
+Five-subject runs: 402 application executions; module study: 508 executions.
+These are not 910 independent performance samples. Each protocol reports its
+paired experimental units. The common portfolio, source hashes, raw timing,
+full-state evidence and 7,552-check offline audit are indexed at:
+ evidence/five-project-evaluation/20261110-v1/
+Module evidence:
+ evidence/fossil-module-factorial/20261110-v1/
+
+Generalization limit: all are existing development subjects, not held-out
+projects. One policy is reused, but reviewed adapters/summaries and supported
+backends are required. Selection and reporting use the same measurement blocks;
+analysis/measurement overhead and future-project accuracy are not established.

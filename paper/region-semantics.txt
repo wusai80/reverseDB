@@ -1,0 +1,242 @@
+ReverseDB bounded semantic core, v1
+2026-11-09. Handwritten preservation argument; not a machine-checked proof.
+
+1. RESEARCH MOTIVATION AND CLAIM BOUNDARY
+
+A dependency on a value is not necessarily a dependency on the object or
+module that currently carries it. Consider a storage read r, a model packet
+p = pack(r,v), and a consumer x = field(p,0). The consumer needs r. It does
+not inherently need p. However, erasing p is justified only if construction
+has no required effects, identity, or failure. A real ORM constructor cannot
+be treated as pack merely because one successful trace returns the same r.
+
+This motivates two linked decisions: where a replacement boundary may lie,
+and which internal representations can be eliminated inside that boundary.
+Checking only the smallest regions can miss a valid larger region: p may
+have no boundary codec, although the larger producer-consumer region exports
+only x. Conversely, enlarging a region cannot excuse an unsupported effect.
+
+The executable kernel establishes this distinction for a deliberately small
+language. Its elementary rewrites are standard semantic simplifications,
+not a novelty claim. A publishable contribution still requires evidence that
+joint region discovery and checked replacement add useful capabilities over
+local simplification and existing specialization/partitioning methods.
+
+2. LANGUAGE, CONTRACT AND OBSERVATIONS
+
+Types t ::= i64 | bool | packet(t1,...,tk), including empty/nested packets.
+Values are exact signed 64-bit integers, booleans, and immutable value tuples.
+Packets have structural value semantics. There is no address, identity test,
+alias-visible mutation, callback, getter, destructor, or allocation failure.
+Inputs are scalar; intermediate and returned values may include packets.
+
+A program P is an input type map, a finite ordered list of SSA operations,
+and a list of observable result variables. Every operand must be defined
+earlier. Each operation has a stable unique ID and a source-module label.
+Module labels constrain the local-only baseline; they do not grant semantic
+authority. There are no arbitrary branches or loops. A check is a terminating
+guard, not a general control-flow construct. Unknown operations are rejected.
+
+The store S is any finite map from i64 keys to i64 values. No row is deleted
+by optimization. A missing key reads as zero, but remains absent: absence is
+distinguished from a stored zero by the final full-store observation.
+
+The execution contract Gamma specifies whether read faults are observable.
+Gamma_strict admits arbitrary string-valued injected read and write failures.
+Gamma_success_read excludes ALL read failures, rather than inferring their
+absence from tests. Write failures remain admitted under both contracts.
+Fault map F associates stable database-operation IDs with failure codes.
+It is fixed for an execution; all selected faults need not be reached.
+
+For every type-correct input I, store S0, and admissible F, define
+
+  Obs_Gamma(P,I,S0,F) = (termination/result, complete final store, event trace).
+
+Termination/result is either Ok(ordered typed values) or Error(string).
+The event trace is an ordered list of (label, typed operand values).
+One outer transaction covers the entire program. Failure rolls the store
+back to S0; already emitted external events remain visible. Successful
+completion commits. Commit/rollback themselves are assumed to succeed.
+There are no observable concurrent readers, locks, callbacks, query traces,
+wall-clock limits, resource failures, or hidden database triggers here.
+These exclusions are domain premises, not permission to ignore them in an
+application whose contract includes them. No concurrency or durability
+subsystem is removed by this prototype.
+
+Observational equivalence P ~=_Gamma Q means equal Obs for EVERY admissible
+(I,S0,F), not equality only over profiling inputs or the finite test matrix.
+The verifier compares values with bool/int distinction, not Python's True==1.
+
+3. OPERATIONAL SEMANTICS
+
+A running configuration is (pc, environment E, working store S, trace T, S0).
+Arguments are already evaluated SSA values; instructions do not re-evaluate
+an expression or call a hidden accessor. Successful instructions advance pc.
+
+  x = const(c):       bind the typed literal c.
+  x = add(a,b):       bind a+b if in i64 range; otherwise Error(i64-overflow).
+  x = eq(a,b):        bind boolean equality of two i64 values.
+  x = pack(a1,...):   bind an immutable structural tuple.
+  x = field(p,j):     bind component j; the type checker proves j is valid.
+  x = read(k):        if F(id) exists, fail; otherwise bind S.get(k,0).
+  write(k,v):         if F(id) exists, fail; otherwise set S[k]=v.
+  check(b,code):      if b is false, fail with code; otherwise continue.
+  emit(label,a1,...): append label and argument values to T.
+
+Any failure terminates immediately, returns the first failure code, preserves
+T, and restores S0. Reaching the end returns the output list and S. The
+program is finite, operations are total or explicitly failing, and execution
+terminates under the stated resource assumptions.
+
+4. REWRITE CALCULUS AND CERTIFICATE CHECKER
+
+R_project: if p=pack(a0,...,ak) precedes x=field(p,j), replace subsequent
+uses of x and output occurrences of x by aj, then remove the field operation.
+The packet operation is not automatically removed: it can still escape.
+
+R_dead_total: remove an instruction defining unused x if its opcode is
+const, eq, pack, or field. Unused means no remaining instruction operand or
+program output refers to x. Static typing proves field cannot fail.
+
+R_dead_read: remove an unused read only under Gamma_success_read. The read
+neither changes the store nor emits an event and is total in that domain.
+
+No rule removes add, write, check, or emit. In particular an unused checked
+addition can overflow, and a dead read can be the first failure under the
+strict contract. No rule reorders surviving operations or alters a write.
+
+The proposer first substitutes known packet projections in source order,
+then computes dead-value closure in reverse order. It emits a sequence of
+(rule, operation ID) steps. Names, data values, module names, workload counts,
+and project identities do not select a rule. The fixed opcode semantics do.
+
+The checker independently replays each step from P: resolve the producer,
+check types/index, recompute immediate consumers, and check the explicit
+opcode/contract case. It validates the resulting program after each step
+and requires exact equality with the proposed Q. It does not invoke the
+proposer or accept a supplied verified/pure/capability flag. A source and
+contract hash prevents certificate reuse on another input; the hash is not
+the preservation proof. The checker and its type rules remain trusted code.
+
+The current straightforward implementation uses scans, not optimized data
+structures. For bounded operand arity and type size, proposal and certificate
+replay take quadratic time in instruction count. These costs are acceptable
+for a small reference kernel; no asymptotic optimizer contribution is claimed.
+
+5. CONDITIONAL PRESERVATION ARGUMENT
+
+Lemma A (projection). In every execution reaching field(p,j), the earlier
+pack operation has bound p to its already evaluated operands. SSA prevents
+rebinding, and packets cannot be mutated. Thus field(p,j) and aj are the
+same typed value. The field is total and effect-free. Substitution preserves
+all later argument values, failure decisions, writes, events and outputs.
+If execution fails earlier, neither version reaches the changed operation.
+
+Lemma B (dead total operation). If a total pure definition has no remaining
+consumer, its only state change is an unused environment binding. Removing
+it leaves all future observable steps and arguments unchanged. No required
+effect or failure is lost. This lemma intentionally does not cover add.
+
+Lemma C (dead read). Under Gamma_success_read, a read is total and does not
+change any modeled state except its unused result binding. Lemma B's argument
+therefore applies. Under Gamma_strict the statement is false: let F(id) be
+read-denied and let the suffix succeed; removing the read changes Error to Ok.
+
+Theorem (checked finite rewrites). For a well-typed P and the domain above,
+if check(P,Q,C,Gamma) accepts, then P ~=_Gamma Q.
+
+Argument: start from P. Each accepted certificate step meets exactly the
+preconditions of Lemma A, B, or C and preserves typing. Each local lemma
+applies within the unchanged prefix and suffix, including failure prefixes.
+Induction over the finite certificate yields equivalence to the replayed
+program. Final syntactic equality identifies that program with Q. Under
+strict Gamma no DB operation is erased; under successful-read Gamma an
+erased DB site has no admissible fault, so the same F is valid in Q. Equal
+pre-failure store/trace transitions imply equal rollback and event behavior.
+The empty certificate preserves P itself. Thus abstention is safe fallback.
+
+This is a handwritten argument over this IR, not a verified theorem about
+arbitrary Python, Java, SQL, bytecode, or decompiled programs. In particular,
+deriving a sound IR from an ORM constructor is still an open integration task.
+
+6. REGIONS AND THE BOUNDARY INSIGHT
+
+For a contiguous interval R=[i,j), let Def(R) be its result variables,
+In(R) its used variables not defined inside R, and Out(R) its defined values
+used after j or returned by the program. Source order is retained. Required
+effects cannot be identified by this value interface alone: opcode support
+and ordered state/trace transitions must also be preserved.
+
+The v1 target primitive catalog B includes all current opcodes except emit.
+The supported wire-type set W is {i64,bool}; packets may remain internal.
+Define structural eligibility:
+
+  Eligible(R) iff R contains a DB op,
+      every operation in R belongs to B,
+      every variable in In(R) union Out(R) has a type in W.
+
+Enumerate all O(n^2) contiguous intervals and check the above conditions.
+The reference implementation scans interval/prefix/suffix data and is O(n^3)
+for bounded arity and type size; candidate count is not running time.
+For a local-only baseline, additionally require a single original module.
+An unsupported opcode is an absolute barrier in this version.
+
+Eligibility is not hereditary with respect to subintervals: read;pack exports
+a packet and fails W, whereas read;pack;field can export only an i64 and pass.
+It is also not monotone under enlargement: adding emit makes it fail B.
+Therefore one cannot prune all supersets of an ineligible interval merely
+because its smaller interface lacks a codec. The executable fixture checks
+both facts with the same catalog and no project-specific predicate.
+
+Boundary-only grouping, interpreted as the same ordered operations under the
+same outer transaction, is semantics-neutral. Actual remote execution or SQL
+lowering additionally needs a codec left-inverse on every supported value,
+primitive refinement preserving first failure and effect order, and the same
+transaction/context behavior. Eligible alone does NOT establish those facts.
+discover_regions therefore explicitly returns generated_backend=false.
+
+A future placement objective may minimize estimated end-to-end cost over
+non-overlapping checked regions plus unchanged host segments. A calibrated
+cost model ranks already legal candidates; it cannot legalize a rewrite.
+Existing call-count DP/greedy code is unchanged and is not a new result here.
+
+7. EXECUTABLE REFINEMENT AND CURRENT EVIDENCE
+
+model.observe is a dictionary interpreter. sqlite_backend.execute independently
+implements primitive execution over a real SQLite INTEGER key/value table.
+They share the type/domain validator, not the operation evaluator. The SQLite
+executor executes individual statements; it is NOT a fused SQL generator.
+Unhandled SQLite/resource exceptions fail validation rather than being mapped
+silently to successful execution. The backend trust premise is conformance
+to the primitive semantics in the declared environment, including successful
+commit/rollback. The finite experiment supports this premise but does not
+prove it for all inputs or all SQLite configurations.
+
+The fixed development matrix includes constructed examples, missing/present
+rows, negative/zero/positive values, coincident/distinct keys, both guards,
+i64 extremes, all subsets of eligible fault sites, escaping/nested packets,
+multiple writes, and full-state comparison including an untouched row. Tests
+also reject reordered reads, forged proof steps, effect deletion and unknown
+operations, and check invariance under renaming. These examples were designed
+with the kernel: they are NOT held-out applications or transfer evidence.
+
+Reproduce: python3 -m prototype.region_semantics.verify --out NEW_DIRECTORY
+Final development evidence: evidence/region-semantics/20261109-v2/.
+The earlier v1 run is retained; v2 strengthens typed result comparison and
+adds boolean escape and two-write rollback cases. Neither run measures speed.
+
+8. TRUST AND NEXT GATE
+
+Trusted: this semantic specification; type rules and checker implementation;
+faithful future extraction from executable semantics; primitive/codec/backend
+refinement; explicit deployment assumptions. Mechanically checked here:
+typing, use/producer relations, total-field preconditions, admissible rule
+steps, source/contract binding, exact candidate equality, structural region
+interfaces, and finite oracle/backend observations.
+
+Next gate: demonstrate a source-bound extractor and executable replacement
+binding on DEVELOPMENT material under these same rules, including refusal of
+unsupported behavior. Freeze those components and baselines before inspecting
+held-out regions. If ordinary candidate applications mostly abstain under
+this fragment, report the limitation; do not silently broaden the fragment
+while calling the new results frozen transfer.

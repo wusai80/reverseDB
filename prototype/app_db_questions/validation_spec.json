@@ -1,0 +1,53 @@
+{
+  "version": 1,
+  "scope": "Two read-only application/database research questions; no production rewrite",
+  "questions": {
+    "P1": "Relationalize a closed, typed application intermediate consumed by SQL",
+    "P2": "Derive a consumer-sufficient key relation and restrict derived computation"
+  },
+  "finite_model": {
+    "keys": [0, 1],
+    "documents": [0, 1],
+    "link_multiplicities": [0, 1, 2],
+    "target_sequence_max_length": 3,
+    "allowed_documents": "all subsets",
+    "offsets": [0, 1, 2, 3],
+    "limits": [0, 1, 3],
+    "numeric_domain": "mathematical nonnegative integers",
+    "consumer": "already determined target occurrence order, slice, then output key/count pairs",
+    "exclusions": ["SQL NULL", "runtime numeric conversion", "scalar query errors", "concurrency", "actual source binding"]
+  },
+  "binding_obligations": [
+    {"id": "closed_region", "requirement": "All intermediate consumers known; no escaping map, logging effect or unmodeled branch"},
+    {"id": "typed_bridge", "requirement": "Decode/app compute/encode commutes with DB expression over the admitted domain"},
+    {"id": "absence", "requirement": "Missing entity, absent group, NULL and typed zero remain distinct as required"},
+    {"id": "effective_relation", "requirement": "All authorization, tenant and manager predicates retained"},
+    {"id": "consumer_demand", "requirement": "Page membership and ordering independent of derived value; every additional consumer included"},
+    {"id": "total_elided_work", "requirement": "Omitted computation cannot raise a business error or produce an observable effect"},
+    {"id": "snapshot", "requirement": "All dependency reads share the fixed snapshot/context, with no relevant self-writes"},
+    {"id": "ordering", "requirement": "Original order sufficient for exact output; candidate adds no tie-breaker"}
+  ],
+  "pending_database_checks": [
+    "P1 scalar absent district versus present district with empty count",
+    "P1 scalar Java/JDBC/SQL integer boundaries and unsupported conversion rejection",
+    "P1 map empty groups, duplicate target occurrences and duplicate association rows",
+    "P1/P2 authorization and effective manager predicates retained",
+    "P2 independent page accepted, count-dependent page rejected, unknown consumer remains unknown",
+    "P2 hidden global aggregate consumer and possible omitted overflow rejected",
+    "Complete typed ordered outputs and read-only state compared against original",
+    "Unknown or invalid binding leaves the original path unchanged"
+  ],
+  "performance_protocol": {
+    "status": "prepared_not_executed",
+    "arms": ["original", "P1_only", "P2_only", "P1_plus_P2", "manual_grouped_join", "manual_correlated_subquery"],
+    "target_counts": [100, 1000],
+    "effective_links_per_target": [1, 20],
+    "page_fractions": [0.01, 1.0],
+    "data_seeds": [42, 43, 44],
+    "warmups_per_arm": 2,
+    "blocks": 5,
+    "arm_order_seed": 20261104,
+    "metrics": ["typed_output_equivalence", "logical_group_input", "actual_scan_and_aggregate_rows", "transport_bytes", "application_peak_memory", "complete_elapsed_time_including_demand_and_validation"],
+    "constraints": ["same schema and indexes", "same snapshot per comparison", "no timing under heavy trace", "no production API claim from model fixture", "report negative results without expanding matrix"]
+  }
+}

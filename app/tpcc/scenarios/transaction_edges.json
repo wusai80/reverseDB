@@ -1,0 +1,302 @@
+{
+  "version": 1,
+  "commands": [
+    {
+      "id": "edge-01",
+      "type": "Payment",
+      "warehouse": 1,
+      "terminal": 1,
+      "clock_ms": 1793836800000,
+      "district": 1,
+      "customer_district": 1,
+      "customer": 5,
+      "amount": 0.01
+    },
+    {
+      "id": "edge-02",
+      "type": "Payment",
+      "warehouse": 1,
+      "terminal": 2,
+      "clock_ms": 1793836801000,
+      "district": 10,
+      "customer_district": 1,
+      "customer": 5,
+      "amount": 5000
+    },
+    {
+      "id": "edge-03",
+      "type": "Payment",
+      "warehouse": 1,
+      "terminal": 3,
+      "clock_ms": 1793836802000,
+      "district": 1,
+      "customer_district": 1,
+      "customer": 5,
+      "amount": 17.29
+    },
+    {
+      "id": "edge-04",
+      "type": "Payment",
+      "warehouse": 1,
+      "terminal": 4,
+      "clock_ms": 1793836803000,
+      "district": 10,
+      "customer_district": 1,
+      "customer": 5,
+      "amount": 0.01
+    },
+    {
+      "id": "edge-05",
+      "type": "Payment",
+      "warehouse": 1,
+      "terminal": 1,
+      "clock_ms": 1793836804000,
+      "district": 1,
+      "customer_district": 1,
+      "customer": 5,
+      "amount": 5000
+    },
+    {
+      "id": "edge-06",
+      "type": "Payment",
+      "warehouse": 1,
+      "terminal": 2,
+      "clock_ms": 1793836805000,
+      "district": 10,
+      "customer_district": 1,
+      "customer": 5,
+      "amount": 17.29
+    },
+    {
+      "id": "edge-07",
+      "type": "Payment",
+      "warehouse": 1,
+      "terminal": 3,
+      "clock_ms": 1793836806000,
+      "district": 1,
+      "customer_district": 1,
+      "customer": 5,
+      "amount": 0.01
+    },
+    {
+      "id": "edge-08",
+      "type": "Payment",
+      "warehouse": 1,
+      "terminal": 4,
+      "clock_ms": 1793836807000,
+      "district": 10,
+      "customer_district": 1,
+      "customer": 5,
+      "amount": 5000
+    },
+    {
+      "id": "edge-09",
+      "type": "Payment",
+      "warehouse": 1,
+      "terminal": 1,
+      "clock_ms": 1793836808000,
+      "district": 1,
+      "customer_district": 1,
+      "customer": 5,
+      "amount": 17.29
+    },
+    {
+      "id": "edge-10",
+      "type": "Payment",
+      "warehouse": 1,
+      "terminal": 2,
+      "clock_ms": 1793836809000,
+      "district": 10,
+      "customer_district": 1,
+      "customer": 5,
+      "amount": 0.01
+    },
+    {
+      "id": "edge-11",
+      "type": "Payment",
+      "warehouse": 1,
+      "terminal": 3,
+      "clock_ms": 1793836810000,
+      "district": 1,
+      "customer_district": 1,
+      "customer": 5,
+      "amount": 5000
+    },
+    {
+      "id": "edge-12",
+      "type": "Payment",
+      "warehouse": 1,
+      "terminal": 4,
+      "clock_ms": 1793836811000,
+      "district": 10,
+      "customer_district": 1,
+      "customer": 5,
+      "amount": 17.29
+    },
+    {
+      "id": "edge-13",
+      "type": "Payment",
+      "warehouse": 1,
+      "terminal": 1,
+      "clock_ms": 1793836812000,
+      "district": 1,
+      "customer_district": 1,
+      "customer": 1,
+      "amount": 0.01
+    },
+    {
+      "id": "edge-14",
+      "type": "Payment",
+      "warehouse": 1,
+      "terminal": 2,
+      "clock_ms": 1793836813000,
+      "district": 1,
+      "customer_district": 1,
+      "customer": 1,
+      "amount": 5000
+    },
+    {
+      "id": "edge-15",
+      "type": "Payment",
+      "warehouse": 1,
+      "terminal": 3,
+      "clock_ms": 1793836814000,
+      "district": 1,
+      "customer_district": 1,
+      "customer": 1,
+      "amount": 12.34
+    },
+    {
+      "id": "edge-16",
+      "type": "OrderStatus",
+      "warehouse": 1,
+      "terminal": 4,
+      "clock_ms": 1793836815000,
+      "district": 1,
+      "customer": 5
+    },
+    {
+      "id": "edge-17",
+      "type": "NewOrder",
+      "warehouse": 1,
+      "terminal": 1,
+      "clock_ms": 1793836816000,
+      "district": 1,
+      "customer": 5,
+      "lines": [
+        {
+          "item": 201,
+          "quantity": 2
+        },
+        {
+          "item": 202,
+          "quantity": 2
+        },
+        {
+          "item": 203,
+          "quantity": 2
+        },
+        {
+          "item": 204,
+          "quantity": 2
+        },
+        {
+          "item": 205,
+          "quantity": 2
+        }
+      ]
+    },
+    {
+      "id": "edge-18",
+      "type": "OrderStatus",
+      "warehouse": 1,
+      "terminal": 2,
+      "clock_ms": 1793836817000,
+      "district": 1,
+      "customer": 5
+    },
+    {
+      "id": "edge-19",
+      "type": "StockLevel",
+      "warehouse": 1,
+      "terminal": 3,
+      "clock_ms": 1793836818000,
+      "district": 1,
+      "threshold": 10
+    },
+    {
+      "id": "edge-20",
+      "type": "StockLevel",
+      "warehouse": 1,
+      "terminal": 4,
+      "clock_ms": 1793836819000,
+      "district": 1,
+      "threshold": 20
+    },
+    {
+      "id": "edge-21",
+      "type": "Delivery",
+      "warehouse": 1,
+      "terminal": 1,
+      "clock_ms": 1793836820000,
+      "carrier": 1
+    },
+    {
+      "id": "edge-22",
+      "type": "Delivery",
+      "warehouse": 1,
+      "terminal": 2,
+      "clock_ms": 1793836821000,
+      "carrier": 10
+    },
+    {
+      "id": "edge-23",
+      "type": "OrderStatus",
+      "warehouse": 1,
+      "terminal": 3,
+      "clock_ms": 1793836822000,
+      "district": 1,
+      "customer": 2707
+    },
+    {
+      "id": "edge-24",
+      "type": "Payment",
+      "warehouse": 1,
+      "terminal": 4,
+      "clock_ms": 1793836823000,
+      "district": 1,
+      "customer_district": 1,
+      "customer": 1,
+      "amount": 0
+    },
+    {
+      "id": "edge-25",
+      "type": "Payment",
+      "warehouse": 1,
+      "terminal": 1,
+      "clock_ms": 1793836824000,
+      "district": 1,
+      "customer_district": 1,
+      "customer": 1,
+      "amount": 1.001
+    },
+    {
+      "id": "edge-26",
+      "type": "Delivery",
+      "warehouse": 1,
+      "terminal": 2,
+      "clock_ms": 1793836825000,
+      "carrier": 11
+    },
+    {
+      "id": "edge-27",
+      "type": "StockLevel",
+      "warehouse": 1,
+      "terminal": 3,
+      "clock_ms": 1793836826000,
+      "district": 1,
+      "threshold": 21
+    }
+  ],
+  "scope": "Fixed fixture: district 1 customer 5 BC and customer 1 GC; repeated/cross-district payments, amount boundaries, data truncation, latest order, read-only stock count, consecutive delivery and rejected inputs"
+}

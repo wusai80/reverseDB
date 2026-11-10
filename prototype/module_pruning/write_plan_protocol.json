@@ -1,0 +1,29 @@
+{
+  "version": "source-write-plan/v1",
+  "source_archive": "evidence/module-source-labels/20261104-0593df8277a1",
+  "source_file": "sources/saleor/saleor/checkout/utils.py",
+  "dto_file": "sources/saleor/saleor/graphql/checkout/mutations/utils.py",
+  "binding": {
+    "helper": "_append_line_to_update",
+    "dto_class": "CheckoutLineData",
+    "dto_parameter": "line_data",
+    "object_parameter": "line",
+    "queue_parameter": "to_update",
+    "exclusion_parameter": "to_delete",
+    "caller": "add_variants_to_checkout",
+    "bulk_wrapper": "checkout_lines_bulk_update"
+  },
+  "contexts": {
+    "price_capabilities_disabled": {"custom_price_to_update": [false], "custom_price_reason_to_update": [false]},
+    "price_capabilities_enabled": {"custom_price_to_update": [false, true], "custom_price_reason_to_update": [false, true]},
+    "unknown_flags": {}
+  },
+  "helper_scope": "Ordinary exact dataclass Boolean fields; structured if/assignment/augmented-assignment/expression statements. Derive guards, object field reads/writes and ordered append sites from AST. Reject role aliasing/rebinding, DTO mutation, hidden control, unexpected queue mutations and reflection. Other object calls retain unknown effects.",
+  "queue_rule": "Recognize a direct append following a write, or an immediate if object not in queue: queue.append(object) continuation. The latter only guarantees membership equality on the skipped branch; same-instance identity is unknown. Normal-completion source relation only, never a commit guarantee.",
+  "caller_scope": "A unique positional helper invocation and later bulk wrapper invocation share the same initialized local list; reject intervening list rebind/escape/mutation. Literal projected fields must be forwarded by the wrapper to its unique .bulk_update call without rewriting the fields parameter. Other control/transaction effects are not proved.",
+  "assumptions": "Declared function boundary, ordinary Boolean DTO fields, no hidden callbacks/backreferences mutating DTO roles, no external function monkeypatching. May-reach only; no branch feasibility, object alias closure, transaction or trigger summary.",
+  "unknown_rule": "Missing Boolean context retains both values; dataclass defaults never narrow caller facts. Unsupported helper structure is unknown; unknown caller linkage preserves local facts but no confirmed write-plan path. Effects and full application labels remain unknown.",
+  "evaluation": "Freeze source/static facts for three contexts before joining four existing Saleor labels. Known-source consistency only, no new label execution or independent accuracy claim. Include boundary tests for alias/equality, projection loss, list mutation, role changes and label isolation.",
+  "stop": "One source-bound write-plan extraction; do not expand to full ORM/transaction analysis, new corpus, model fit or timing.",
+  "production_authorized": false
+}

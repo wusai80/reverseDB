@@ -1,0 +1,21 @@
+{
+  "version": "dependency-interactions-finite-development/v1",
+  "scope": "New finite executable model only; not a Java/SQL decompiler or pooled real-application calibration dataset.",
+  "families": ["staged_updates", "write_order", "read_observation"],
+  "factors": {"reorder": [false, true], "same_key": [false, true], "update": ["add", "assign", "max"]},
+  "states": [-1, 0, 2],
+  "amounts": [-1, 1, 3],
+  "observation": "Complete modeled state including unvisited record and metadata, plus returned read value where present; serial normal execution, no faults or concurrency.",
+  "label": "At least one mismatch in the fixed finite state/input product, computed by execution independently of feature extraction. One transformation/contract is one candidate.",
+  "base_features": ["inversion_fraction", "potential_conflict_fraction", "read_fraction", "assignment_fraction", "returned_read_fraction"],
+  "relational_feature": "crossed_conflict_fraction: fraction of reference event pairs whose order reverses AND whose declared cell accesses overlap with at least one write",
+  "interactions": [["crossed_conflict_fraction", "read_fraction"], ["crossed_conflict_fraction", "assignment_fraction"], ["crossed_conflict_fraction", "returned_read_fraction"]],
+  "arms": ["training_prior", "additive", "relational", "interactions"],
+  "fit": "Fixed-prior-intercept ridge logistic regression, lambda=1; train-only centering; each family total weight one. No sign constraints, feature selection or threshold tuning.",
+  "lambda": 1.0,
+  "numerics": "Newton gradient tolerance remains 1e-10; Armijo objective comparison permits 8 floating-point ULPs to avoid rejecting sub-ULP descent near convergence. This repairs numerical termination, not prediction thresholds or model tuning.",
+  "split": "Three leave-entire-mechanism-family-out development folds; keep all schedules/alias contracts/update variants of each template together. One authored synthetic source, not three independent projects.",
+  "metrics": ["equal-family Brier", "equal-family log loss", "per-family results", "reordered safe/unsafe candidate counts"],
+  "stop": "Exactly three arms times three folds, compared with each fold's training prior. Preserve failures or non-improvement. No tuning, DB execution or deletion deployment.",
+  "limitations": "Hand-authored primitive IR and access summaries, deliberately selected contrasts and already-known ordering mechanisms; labels are finite-domain only. Alias contracts are explicit symbolic key relations, not inferred from sampled data. This is an interaction-representation experiment, not external validation."
+}

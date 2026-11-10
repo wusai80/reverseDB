@@ -1,0 +1,148 @@
+Adaptive planning over deletion and fusion
+2026-11-10
+
+Purpose
+
+Keep two transformation mechanisms, with one decision framework. Deletion
+asks whether a region is unnecessary under the capability contract. Fusion
+asks whether required work can execute across a different application/database
+boundary. They answer different questions; neither replaces the other's
+semantic checker. Language is not a strategy selector.
+
+The common pipeline is:
+  bound capability contract and recovered regions
+  -> independent deletion/fusion candidates
+  -> existing semantic checks and concrete-artifact validation
+  -> comparable measurements of complete alternatives
+  -> original, deletion, fusion, or validated composition.
+
+The implemented selector is prototype/adaptive_planning/selector.py. Existing
+demand and fusion engines are unchanged. Project adapters describe evidence;
+the shared selector contains no Fossil/TPC-C/Oscar branches.
+
+Shared interface
+
+A portfolio has schema adaptive-plan-portfolio/v1, a context, version-bound
+engine references, and candidates including original. Context binds source,
+contract, workload, deployment/study protocol, and timing boundary. Each
+candidate carries its family, affected region IDs, concrete artifact hashes,
+existing-checker inputs, and context-bound validation reports. A composition
+also names its components and evidence validating that exact composition.
+References are repository-relative paths with SHA256 hashes.
+
+Deletion replays demand_model.decide; only conditionally_deletable is admitted.
+Fusion replays placement_frontend.select_complete_contract; an actual admitted
+database region is required. Unknown obligations, failed checks, changed
+artifacts, and unsupported families cannot be rescued by favorable timings.
+The original must itself have valid bindings; an invalid original stops
+selection instead of silently returning an unverified fallback.
+
+Eligible disjoint deletion/fusion regions produce composition opportunities.
+Disjointness alone is not semantic independence. A combined implementation
+must have its own validation and measured total cost. Missing joint evidence
+keeps it pending. Overlapping regions require reanalysis and are rejected by
+this implementation. Component speedups are never added or multiplied to
+invent a composition's performance.
+
+Cost and decision rule
+
+Let L(C) be the alternatives admitted under context C, including original P0.
+For paired block i, measure total plan latency T_i(P,C). Comparisons use only
+the same context, timing unit, and ordered block IDs. All values must be finite
+and positive. Missing or unbound costs are unknown, not zero. Raw measurement
+references and normalized sample records are hash-bound; the evidence audit
+independently checks that imported samples match the archived measurements.
+
+For alternatives P and Q, compute
+  g_i(P,Q) = log T_i(Q,C) - log T_i(P,C).
+The default policy uses at least 6 paired blocks, 4,000 paired bootstrap draws,
+a fixed seed of 1729, and the lower 5th-percentile bound. The bound is clamped
+to the observed mean log gain, so dominance edges strictly improve that mean
+and cannot form cycles. P robustly beats Q when the bound exceeds log(1.02).
+Here 1.02 is a speedup threshold, not exactly a 2% latency reduction.
+
+First qualify only alternatives that robustly beat P0. Among those and P0,
+retain plans not robustly outperformed by another qualified plan. Choose the
+plan with the fewest transformation leaves; break ties by geometric latency
+then stable ID. Thus a composition needs evidence of useful additional benefit
+to displace a simpler plan. Without comparable baseline costs, retain P0.
+
+The bootstrap is an exploratory performance-ranking device. It is not a
+probability of semantic correctness, a multiple-comparison guarantee, or a
+proof of a global optimum. The result is the best-supported choice among
+supplied, validated alternatives under this policy.
+
+Retrospective replay
+
+All following results reuse archived measurements; no new performance run was
+performed for this integration. The policy was developed with these outcomes
+already known. This is development evidence, not a held-out adaptive trial.
+
+Context          Selected        Reason
+Fossil hash      deletion        Admitted slice; supported total-cost gain.
+Fossil branch    deletion        Same engine, independently bound workload.
+TPC-C mixed      fusion          Fusion qualifies; composition's extra gain
+                                over fusion is uncertain.
+Oscar prefix     original        Existing fusion checker admits no database
+                                region for the supplied contract.
+
+For TPC-C, both fusion and fusion-plus-deletion remain on the admissible cost
+frontier. The geometric speedup of composition over fusion is about 1.060,
+but its lower bootstrap bound is about 0.988, below 1.02. The selector therefore
+chooses fusion alone. This does not invalidate the measured local benefit of
+deletion or claim that composition can never win on another workload.
+
+The 52 control checks exercise all four outcomes, evidence changes, input-order
+invariance, unknown/required semantics, invalid compositions, missing costs,
+changed engines/artifacts, incomparable workloads, malformed latency values,
+and invalid baselines. Synthetic cost controls demonstrate selection behavior;
+they are not application benchmarks. The separate evidence audit passed 212
+checks covering manifests, raw-sample imports, reproduced decisions, and prior
+freezes. Check counts include artifact-integrity checks, not 212 independent
+semantic tests.
+
+Use
+
+From the repository root:
+  python3 -B scripts/select_adaptive_plan.py \
+    evidence/adaptive-planning/20261110-v2/tpcc-mixed/catalog.json \
+    --out /tmp/reversedb-adaptive-plan.json
+
+The result includes admission decisions, cost exclusions, pairwise comparisons,
+the non-dominated frontier, composition opportunities, and selected artifacts.
+It explicitly sets automatic_deployment=false. The public CLI exactly
+reproduces the archived selection.
+
+To reproduce the audit:
+  python3 -B scripts/audit_adaptive_planning.py \
+    evidence/adaptive-planning/20261110-v2 \
+    evidence/adaptive-planning/20261110-controls-v2
+
+The builder scripts/build_adaptive_portfolios.py imports the archived studies
+into a new output directory. scripts/test_adaptive_planning.py runs the controls
+against a specified portfolio directory and writes to a fresh output directory.
+
+Scope and next experiment
+
+This is an offline adaptive selector for reviewed executable experiments. It
+does not automatically recover every dependency, generate implementations,
+prove all report-to-code associations, or deploy a plan. Reviewed graph facts,
+lowerings, validation reports, and evidence adapters remain explicit premises.
+Hashes establish consistency, not the truth of those premises. The existing
+fusion DP still uses its JDBC-call objective inside candidate generation; this
+outer layer compares measured whole-plan latency and does not discover every
+possible fusion arrangement.
+
+Business data are preserved by the underlying study contracts. A narrow test
+trace is not authorization to remove unseen capabilities. Failures or other
+effects excluded by a study contract remain exclusions, not proven equivalent
+behavior. No language-specific optimization conclusion follows from these
+three systems.
+
+For a new workload or changed contract/artifact/deployment, create a new bound
+portfolio, replay the semantic checks, and measure each admitted alternative
+on paired calibration blocks. Freeze the selection, then evaluate it on fresh
+held-out blocks, counting candidate construction and measurement overhead.
+Do not pool absolute timings across languages, projects, or timing boundaries.
+This prospective experiment is still required before claiming transferable
+performance prediction or net benefits from automatic adaptation.

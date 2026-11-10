@@ -1,0 +1,16 @@
+{
+  "version": "value-effect-representation-transfer/v1",
+  "objective": "Test a common declared SQL value/effect representation across modules, without target-specific adaptations or a risk classifier.",
+  "development_modules": ["NewOrder", "Payment", "Delivery"],
+  "target_modules": ["OrderStatus", "StockLevel"],
+  "development_facts": "evidence/module-transfer/20261106-1b72049103e9",
+  "target_source_archive": "evidence/tpcc-roundtrip/20261103-9954559e225c",
+  "implementation": ["scripts/value_effect_ir.py", "scripts/test_value_effect_ir.py", "prototype/module_pruning/JdbcBoundaryExtract.java", "scripts/jdbc_boundary_contracts.py", "scripts/cross_layer_dependencies.py", "scripts/app_db_smoke.py"],
+  "representation": "Single-table SELECT projections and INSERT/UPDATE explicit assignments; expression operator trees; JDBC positions; row predicates, ordering, limits and lock syntax. Link every represented JDBC parameter use, not only timestamp roots. Java expressions and binding lifecycle use the unchanged typed extractor and inspector. SQL operators/calls are preserved as syntax, not evaluated or proved equivalent.",
+  "unsupported": "DELETE, aliases/joins, subqueries, wildcard projection without schema, multirow INSERT, conflict/RETURNING clauses, unrecognized expressions; the complete affected SQL statement stays unknown. Missing/ambiguous Java definitions stay unknown even when their SQL destination is identified.",
+  "freeze": "First pass development controls and process frozen development facts; persist source hashes and summaries. Only then read/attribute target sources and run the same code. Do not revise representation after reading target coverage.",
+  "measurements": ["represented statement declarations / all declarations", "setter slots with represented SQL roles / all static setter slots", "represented roles with supported Java binding values / all represented roles", "unknown reasons and omitted-statement binding counts", "write_value / projection / row_selection / ordering / row_limit relation counts"],
+  "no_label_leakage": "No candidate behavior outcomes are opened. No runtime labels, module names, table names or parameter slot numbers become risk rules. Names are retained solely for structural attribution; there is no fitted model or predicted safety outcome.",
+  "limits": "One project with prior source exposure; held out from this representation development, not a blind unseen project. No interprocedural result-set decoding, complete capability graph, row/cardinality reasoning, schema/trigger proof or failure equivalence. Raw syntactic coverage is not prediction accuracy.",
+  "stop": "Exactly one frozen extraction for each target. Keep failures/unknowns, no target repair or expanded cases, no model fitting, DB execution, performance test or automatic deletion. If adapted later these targets become development data."
+}

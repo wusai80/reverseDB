@@ -1,0 +1,157 @@
+Pluggable adaptive planning API v1
+2026-11-10
+
+Design
+
+The public abstraction is a portfolio of transformations under one capability
+contract. Deletion and fusion are supplied implementations. The framework does
+not import either algorithm or branch on project/language names. New strategy
+families register validators and supply candidate records through the same API.
+
+Four replaceable interfaces, in prototype/adaptive_planning/api.py:
+
+  CandidateProvider.propose(context, store) -> Iterable[Record]
+    Supplies concrete alternatives and their evidence. A provider can wrap
+    recovered-code analysis, an agent, a search algorithm, or an archived study.
+    It must return the common record format; proposing a plan does not admit it.
+
+  SemanticValidator.validate(context, candidate, store) -> Verdict
+    Registered by transformation family. Returns allow, retain, or unknown,
+    with reasons and optional details. Only allow admits a candidate after the
+    framework's envelope checks. Current adapters replay the unchanged deletion
+    and fusion checkers. A future checker can implement different internals.
+
+  MeasurementProvider.measure(context, candidate, store) -> Record | None
+    Called only for admitted candidates. Supplies a bound latency record or
+    abstains. The provided adapter replays archived measurements; a configured
+    benchmark runner can implement this interface. Predictions alone do not
+    satisfy the current evidence requirements for executable selection.
+
+  SelectionPolicy.choose(context, plans: tuple[MeasuredPlan, ...]) -> Choice
+    Receives only admitted plans with comparable costs, including original.
+    Returns an ID, reason, and diagnostic details. The default implements the
+    earlier paired-bootstrap ranking. A statistical or learned policy can
+    replace it without changing candidate discovery or semantic validation.
+    A policy controls performance preference, never semantic admission.
+
+Shared records
+
+The input remains adaptive-plan-portfolio/v1, preserving existing catalogs.
+Context is a JSON mapping whose digest binds source, contract, workload,
+deployment and measurement boundary. Production adapters must describe these
+dimensions honestly; matching a digest alone cannot establish semantic truth.
+
+Candidate fields:
+  id, family, context (digest), authority='reviewed_experiment', regions,
+  artifacts=[{path, sha256}], validation={context, evidence=[{path, sha256}]},
+  gates (adapter-owned payload), optional cost, optional components.
+
+Original is mandatory and has ID/family original. Each other leaf family has
+a registered validator. Gates are interpreted by that validator, not by the
+core. ExistingGateValidator expects the earlier deletion/fusion gate format.
+
+Composition is reserved by the core. Its components must be admitted, cover
+exactly its regions without overlap, and match validation.components in order.
+It needs its own passing validation and whole-plan costs. Individual component
+timings are never combined into an estimated joint measurement. Providers may
+construct joint candidates; the API does not construct joint code automatically.
+
+Cost fields:
+  context, unit='ms', blocks, values, binding={path,sha256}, evidence=[refs].
+The bound JSON record must exactly match context/unit/blocks/values. Samples
+must be positive and finite, have unique ordered paired block IDs matching the
+baseline, and meet min_blocks (default 6). Paths resolve inside EvidenceStore's
+root. The framework verifies hashes; study-specific audits establish that the
+normalized values correspond to raw measurements. A passing generic report is
+an explicit reviewed premise, not an automatically established equivalence proof.
+
+Framework-owned behavior
+
+PlanningFramework.plan discovers candidates using providers, then performs
+admission, measurement and policy selection. select_catalog accepts an already
+assembled portfolio. Each call returns adaptive-framework-result/v1 with
+selected, reason, context, admission, rejected_costs, measured_plans,
+policy_details, selected_artifacts, and automatic_deployment=false.
+
+The framework keeps authority/context/artifact/report checks, composition
+checks, cost comparability, and baseline fallback outside the plugins. Unknown
+families and retain/unknown verdicts cannot be ranked. A policy ID outside the
+admitted measured set is rejected. Missing baseline costs or a policy failure
+retain the verified original. An invalid original or engine binding aborts.
+Candidate-level validator/measurement errors are recorded and abstain; provider
+failure aborts discovery rather than hiding an incomplete search.
+
+Plugins receive copies of context/candidate records; selection receives frozen
+MeasuredPlan values. Plugins are trusted Python implementations, not sandboxed
+code. The caller must bind all relevant engine/plugin versions for a reproducible
+experiment; the framework verifies supplied references but does not discover
+all transitive dependencies. Plugin authors remain responsible for honest
+semantic assertions and for measurement side effects. No deployment is performed.
+
+Example: existing adapters
+
+  from pathlib import Path
+  import json
+  from prototype.adaptive_planning.adapters import (
+      ArchivedCandidates, reviewed_framework,
+  )
+
+  root = Path('/Users/wusai/Documents/code/reverseDB')
+  catalog = json.loads((root / 'evidence/adaptive-planning/20261110-v2/'
+                       'tpcc-mixed/catalog.json').read_text())
+  original = next(c for c in catalog['candidates'] if c['id'] == 'original')
+  provider = ArchivedCandidates(tuple(c for c in catalog['candidates']
+                                     if c['id'] != 'original'))
+  planner = reviewed_framework(root)
+  result = planner.plan(context=catalog['context'], original=original,
+      providers=(provider,), engine_bindings=catalog['engine_bindings'])
+  print(result['selected'])  # fusion_only for this archived evidence
+
+Equivalent catalog entry point:
+  result = planner.select_catalog(catalog)
+
+Example: alternative implementations (application supplies these objects)
+
+  from prototype.adaptive_planning import PlanningFramework, EvidenceStore
+
+  planner = PlanningFramework(
+      store=EvidenceStore(root),
+      validators={
+          'deletion': deletion_validator,
+          'fusion': fusion_validator,
+          'new_strategy': new_strategy_validator,
+      },
+      measurements=measurement_provider,
+      policy=selection_policy,
+  )
+  result = planner.plan(context=context, original=original,
+      providers=(deletion_provider, fusion_provider, new_strategy_provider),
+      engine_bindings=engine_bindings)
+
+These are structural Python Protocol interfaces: no inheritance hierarchy or
+central strategy enum is required. Unknown families remain blocked until a
+validator is explicitly registered. The constructor is the composition point;
+callers can swap one implementation without replacing the rest of the pipeline.
+
+Runnable example from repository root:
+  python3 -B scripts/run_planning_framework.py \
+    evidence/adaptive-planning/20261110-v2/tpcc-mixed/catalog.json \
+    --out /tmp/reversedb-framework-api.json
+
+Validation and scope
+
+22 API tests passed. These cover third-family registration through a provider,
+independent policy/measurement substitution, failure handling, composition,
+evidence integrity, policy isolation, and baseline fallback. Four archived
+contexts reproduce their prior decisions, admission statuses and all pairwise
+performance comparisons with the default adapters. Synthetic substitution tests
+exercise the interface; they are not application performance measurements.
+
+Run:
+  python3 -B scripts/test_planning_framework.py
+
+The frozen earlier selector and experiment artifacts are unchanged. This API
+adds an implementation boundary around those results. It does not add new
+semantic proofs, automatic decompilation/lowering, new benchmark gains, or
+held-out generalization evidence. Future experiments can replace internals
+through these interfaces while retaining the same public selection protocol.
